@@ -9,6 +9,8 @@ from PyQt5.QtWidgets import (QApplication, QDockWidget, QVBoxLayout, QLabel, QMa
 MAIN_WINDOW_TITLE = "Беларусь История"
 LINE_EDIT_MAIN_WINDOW_PLACEHOLDER = "Искать..."
 
+# TODO: вернуть поиск, продумать статистику, изменить дизайн
+
 history_folder = "History"
 images_folder = os.path.join(history_folder, "Images")
 json_file = os.path.join(history_folder, "bilety.json")
