@@ -1,81 +1,206 @@
 [
 	{
 		"Number": 1,
-		"Text": "Содержание билета с <b><i>ЖИРНЫМ КУРСИВОМ</i></b>."
+		"Text": "Содержание билета с <b><i>ЖИРНЫМ КУРСИВОМ</i></b>.",
+		"Test": [{"Question": "Вопрос 1.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"},
+		{"Question": "Вопрос 2.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "B"},
+		{"Question": "Вопрос 3.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "C"},
+		{"Question": "Вопрос 4.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "D"},
+		{"Question": "Вопрос 5.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"}]
 	},{
 		"Number": 2,
-		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>."
+		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>.",
+		"Test": [{"Question": "Вопрос 1.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"},
+		{"Question": "Вопрос 2.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "B"},
+		{"Question": "Вопрос 3.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "C"},
+		{"Question": "Вопрос 4.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "D"},
+		{"Question": "Вопрос 5.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"}]
 	},{
 		"Number": 3,
-		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>."
+		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>.",
+		"Test": [{"Question": "Вопрос 1.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"},
+		{"Question": "Вопрос 2.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "B"},
+		{"Question": "Вопрос 3.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "C"},
+		{"Question": "Вопрос 4.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "D"},
+		{"Question": "Вопрос 5.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"}]
 	},{
 		"Number": 4,
-		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>."
+		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>.",
+	"Test": [{"Question": "Вопрос 1.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"},
+		{"Question": "Вопрос 2.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "B"},
+		{"Question": "Вопрос 3.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "C"},
+		{"Question": "Вопрос 4.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "D"},
+		{"Question": "Вопрос 5.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"}]
 	},{
 		"Number": 5,
-		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>."
+		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>.",
+		"Test": [{"Question": "Вопрос 1.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"},
+		{"Question": "Вопрос 2.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "B"},
+		{"Question": "Вопрос 3.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "C"},
+		{"Question": "Вопрос 4.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "D"},
+		{"Question": "Вопрос 5.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"}]
 	},{
 		"Number": 6,
-		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>."
+		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>.",
+		"Test": [{"Question": "Вопрос 1.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"},
+		{"Question": "Вопрос 2.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "B"},
+		{"Question": "Вопрос 3.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "C"},
+		{"Question": "Вопрос 4.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "D"},
+		{"Question": "Вопрос 5.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"}]
 	},{
 		"Number": 7,
-		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>."
+		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>.",
+		"Test": [{"Question": "Вопрос 1.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"},
+		{"Question": "Вопрос 2.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "B"},
+		{"Question": "Вопрос 3.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "C"},
+		{"Question": "Вопрос 4.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "D"},
+		{"Question": "Вопрос 5.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"}]
 	},{
 		"Number": 8,
-		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>."
+		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>.",
+		"Test": [{"Question": "Вопрос 1.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"},
+		{"Question": "Вопрос 2.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "B"},
+		{"Question": "Вопрос 3.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "C"},
+		{"Question": "Вопрос 4.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "D"},
+		{"Question": "Вопрос 5.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"}]
 	},{
 		"Number": 9,
-		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>."
+		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>.",
+		"Test": [{"Question": "Вопрос 1.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"},
+		{"Question": "Вопрос 2.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "B"},
+		{"Question": "Вопрос 3.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "C"},
+		{"Question": "Вопрос 4.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "D"},
+		{"Question": "Вопрос 5.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"}]
 	},{
 		"Number": 10,
-		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>."
+		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>.",
+	"Test": [{"Question": "Вопрос 1.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"},
+		{"Question": "Вопрос 2.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "B"},
+		{"Question": "Вопрос 3.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "C"},
+		{"Question": "Вопрос 4.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "D"},
+		{"Question": "Вопрос 5.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"}]
 	},{
 		"Number": 11,
-		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>."
+		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>.",
+	"Test": [{"Question": "Вопрос 1.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"},
+		{"Question": "Вопрос 2.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "B"},
+		{"Question": "Вопрос 3.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "C"},
+		{"Question": "Вопрос 4.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "D"},
+		{"Question": "Вопрос 5.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"}]
 	},{
 		"Number": 12,
-		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>."
+		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>.",
+	"Test": [{"Question": "Вопрос 1.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"},
+		{"Question": "Вопрос 2.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "B"},
+		{"Question": "Вопрос 3.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "C"},
+		{"Question": "Вопрос 4.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "D"},
+		{"Question": "Вопрос 5.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"}]
 	},{
 		"Number": 13,
-		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>."
+		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>.",
+	"Test": [{"Question": "Вопрос 1.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"},
+		{"Question": "Вопрос 2.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "B"},
+		{"Question": "Вопрос 3.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "C"},
+		{"Question": "Вопрос 4.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "D"},
+		{"Question": "Вопрос 5.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"}]
 	},{
 		"Number": 14,
-		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>."
+		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>.",
+	"Test": [{"Question": "Вопрос 1.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"},
+		{"Question": "Вопрос 2.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "B"},
+		{"Question": "Вопрос 3.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "C"},
+		{"Question": "Вопрос 4.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "D"},
+		{"Question": "Вопрос 5.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"}]
 	},{
 		"Number": 15,
-		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>."
+		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>.",
+	"Test": [{"Question": "Вопрос 1.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"},
+		{"Question": "Вопрос 2.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "B"},
+		{"Question": "Вопрос 3.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "C"},
+		{"Question": "Вопрос 4.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "D"},
+		{"Question": "Вопрос 5.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"}]
 	},{
 		"Number": 16,
-		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>."
+		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>.",
+	"Test": [{"Question": "Вопрос 1.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"},
+		{"Question": "Вопрос 2.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "B"},
+		{"Question": "Вопрос 3.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "C"},
+		{"Question": "Вопрос 4.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "D"},
+		{"Question": "Вопрос 5.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"}]
 	},{
 		"Number": 17,
-		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>."
+		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>.",
+	"Test": [{"Question": "Вопрос 1.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"},
+		{"Question": "Вопрос 2.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "B"},
+		{"Question": "Вопрос 3.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "C"},
+		{"Question": "Вопрос 4.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "D"},
+		{"Question": "Вопрос 5.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"}]
 	},{
 		"Number": 18,
-		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>."
+		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>.",
+	"Test": [{"Question": "Вопрос 1.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"},
+		{"Question": "Вопрос 2.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "B"},
+		{"Question": "Вопрос 3.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "C"},
+		{"Question": "Вопрос 4.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "D"},
+		{"Question": "Вопрос 5.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"}]
 	},{
 		"Number": 19,
-		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>."
+		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>.",
+	"Test": [{"Question": "Вопрос 1.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"},
+		{"Question": "Вопрос 2.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "B"},
+		{"Question": "Вопрос 3.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "C"},
+		{"Question": "Вопрос 4.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "D"},
+		{"Question": "Вопрос 5.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"}]
 	},{
 		"Number": 20,
-		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>."
+		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>.",
+	"Test": [{"Question": "Вопрос 1.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"},
+		{"Question": "Вопрос 2.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "B"},
+		{"Question": "Вопрос 3.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "C"},
+		{"Question": "Вопрос 4.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "D"},
+		{"Question": "Вопрос 5.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"}]
 	},{
 		"Number": 21,
-		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>."
+		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>.",
+	"Test": [{"Question": "Вопрос 1.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"},
+		{"Question": "Вопрос 2.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "B"},
+		{"Question": "Вопрос 3.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "C"},
+		{"Question": "Вопрос 4.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "D"},
+		{"Question": "Вопрос 5.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"}]
 	},{
 		"Number": 22,
-		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>."
+		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>.",
+	"Test": [{"Question": "Вопрос 1.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"},
+		{"Question": "Вопрос 2.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "B"},
+		{"Question": "Вопрос 3.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "C"},
+		{"Question": "Вопрос 4.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "D"},
+		{"Question": "Вопрос 5.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"}]
 	},
 	{
 		"Number": 23,
-		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>."
+		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>.",
+		"Test": [{"Question": "Вопрос 1.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"},
+		{"Question": "Вопрос 2.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "B"},
+		{"Question": "Вопрос 3.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "C"},
+		{"Question": "Вопрос 4.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "D"},
+		{"Question": "Вопрос 5.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"}]
 	},
 	{
 		"Number": 24,
-		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>."
+		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>.",
+		"Test": [{"Question": "Вопрос 1.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"},
+		{"Question": "Вопрос 2.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "B"},
+		{"Question": "Вопрос 3.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "C"},
+		{"Question": "Вопрос 4.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "D"},
+		{"Question": "Вопрос 5.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"}]
 	},
 	{
 		"Number": 25,
-		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>."
+		"Text": "Содержание билета с <b>жирным текстом</b> и <i>курсивом</i>.",
+		"Test": [{"Question": "Вопрос 1.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"},
+		{"Question": "Вопрос 2.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "B"},
+		{"Question": "Вопрос 3.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "C"},
+		{"Question": "Вопрос 4.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "D"},
+		{"Question": "Вопрос 5.", "Answers": ["A", "B", "C", "D"], "CorrectAnswer": "A"}]
 	}
 ]
