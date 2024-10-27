@@ -9,30 +9,30 @@ headers = {'User-Agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 
 
 bilety = []
 
-# for i in range(1,26):
-#     r = get(BASE_URL+f"{i}v1", headers=headers)
-#     get_html = BS(r.content, 'html.parser')
-#     res = str(get_html.select_one(".t004 > div > div > div"))
-#     bilety.append({"Number": i,
-#                    "Text": res,
-#                    "Test": [{"Question": "Вопрос 1.",
-#                              "Answers": ["A", "B", "C", "D"],
-#                              "CorrectAnswer": "A"},
-#                             {"Question": "Вопрос 2.",
-#                              "Answers": ["A", "B", "C", "D"],
-#                              "CorrectAnswer": "B"},
-#                             {"Question": "Вопрос 3.",
-#                              "Answers": ["A", "B", "C", "D"],
-#                              "CorrectAnswer": "C"},
-#                             {"Question": "Вопрос 4.",
-#                              "Answers": ["A", "B", "C", "D"],
-#                              "CorrectAnswer": "D"},
-#                             {"Question": "Вопрос 5.",
-#                              "Answers": ["A", "B", "C", "D"],
-#                              "CorrectAnswer": "A"}]})
-#
-# with open("History/bilety.json", "w") as file:
-#     file.write(json_encode(bilety))
+for i in range(1,26):
+    r = get(BASE_URL+f"{i}v1", headers=headers)
+    get_html = BS(r.content, 'html.parser')
+    res = str(get_html.select_one(".t004 > div > div > div"))
+    bilety.append({"Number": i,
+                   "Text": res,
+                   "Test": [{"Question": "Вопрос 1.",
+                             "Answers": ["A", "B", "C", "D"],
+                             "CorrectAnswer": "A"},
+                            {"Question": "Вопрос 2.",
+                             "Answers": ["A", "B", "C", "D"],
+                             "CorrectAnswer": "B"},
+                            {"Question": "Вопрос 3.",
+                             "Answers": ["A", "B", "C", "D"],
+                             "CorrectAnswer": "C"},
+                            {"Question": "Вопрос 4.",
+                             "Answers": ["A", "B", "C", "D"],
+                             "CorrectAnswer": "D"},
+                            {"Question": "Вопрос 5.",
+                             "Answers": ["A", "B", "C", "D"],
+                             "CorrectAnswer": "A"}]})
+
+with open("History/bilety.json", "w") as file:
+    file.write(json_encode(bilety))
 
 # Парсинг картинок к билетам
 for i in range(1,26):
