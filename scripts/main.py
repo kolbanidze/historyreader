@@ -159,7 +159,8 @@ class TestMenuWindow(QMainWindow):
         super().__init__(parent)
         self.tickets = tickets
         self.setWindowTitle("Меню тестов")
-        self.setMinimumSize(800, 600)
+        # self.setMinimumSize(800, 600)
+        self.resize(800, 600)
 
         # Сетка для тестов
         self.gridTests = QGridLayout()
@@ -230,7 +231,8 @@ class TestMenuWindow(QMainWindow):
 class MainWindow(QMainWindow):
 
     def pbTicketsListClicked(self):
-        self.setCentralWidget(self.wTicketsList)
+        # Переход к прокручиваемому списку билетов при нажатии кнопки
+        self.setCentralWidget(self.scrollAreaTicketsList)
 
     def __init__(self):
         super().__init__()
@@ -305,14 +307,21 @@ class MainWindow(QMainWindow):
             wFact.setLayout(hbFact)
             self.vbBody.addWidget(wFact)
 
+        # Создаем прокручиваемую область для списка билетов
+        self.scrollAreaTicketsList = QScrollArea()
+        self.scrollAreaTicketsList.setWidgetResizable(True)
+
+        # Основной виджет для сетки билетов
         self.wTicketsList = QWidget()
-        # Сетка билетов
         self.gridTickets = QGridLayout()
         self.gridTickets.setSpacing(10)
         self.update_ticket_display(self.tickets)  # Первоначальное отображение всех билетов
-
-        # Добавление сетки билетов в макет
         self.wTicketsList.setLayout(self.gridTickets)
+
+        # Добавляем сетку билетов в прокручиваемую область
+        self.scrollAreaTicketsList.setWidget(self.wTicketsList)
+
+        # Добавляем виджет тела
         self.wBody.setLayout(self.vbBody)
         self.saBody.setWidgetResizable(True)
         self.saBody.setWidget(self.wBody)
@@ -331,8 +340,8 @@ class MainWindow(QMainWindow):
         # Main Window Settings
         self.leSearch.setPlaceholderText(LINE_EDIT_MAIN_WINDOW_PLACEHOLDER)
         self.resize(1136, 639)
-        self.setMaximumWidth(1136)
-        self.setMaximumHeight(639)
+        # self.setMaximumWidth(1136)
+        # self.setMaximumHeight(639)
         self.setWindowTitle(MAIN_WINDOW_TITLE)
         self.setCentralWidget(self.wBackground)
 
@@ -346,7 +355,10 @@ class MainWindow(QMainWindow):
         # Подключение обработчика для кнопки меню
         self.pbMenu.clicked.connect(self.open_test_menu)
 
+        # Подключение к обработчику клика по кнопке списка билетов
         self.pbTicketsList.clicked.connect(self.pbTicketsListClicked)
+
+    # Оставляем остальные методы без изменений
 
     def create_ticket_widget(self, ticket):
         ticket_widget = QWidget()
