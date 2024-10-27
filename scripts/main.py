@@ -179,7 +179,7 @@ class TestMenuWindow(QMainWindow):
         test_layout = QVBoxLayout()
 
         # Загружаем изображение теста
-        test_image_path = os.path.join("History", "Images", f"{ticket['Number']}.jpeg")
+        test_image_path = os.path.join("data", "images", f"ticket_{ticket['Number']}.png")
         test_image = QLabel()
         test_image.setPixmap(QPixmap(test_image_path).scaled(image_width, int(image_width * 0.67), Qt.KeepAspectRatio, Qt.SmoothTransformation))
         test_image.setAlignment(Qt.AlignCenter)
@@ -236,7 +236,7 @@ class MainWindow(QMainWindow):
         # Загрузка JSON данных
         with open("data\\json\\main.json", "r", encoding="utf-8") as f:
             self.strings = json.loads(f.read())
-        with open("History/bilety.json", "r", encoding="utf-8") as f:
+        with open("data\\json\\bilety.json", "r", encoding="utf-8") as f:
             self.tickets = json.loads(f.read())
 
         # Основной фон и макет
@@ -346,7 +346,7 @@ class MainWindow(QMainWindow):
         ticket_layout = QVBoxLayout()
 
         # Load ticket image
-        ticket_image_path = os.path.join("History", "Images", f"{ticket['Number']}.jpeg")
+        ticket_image_path = os.path.join("data", "images", f"ticket_{ticket['Number']}.png")
         ticket_image = QLabel()
         ticket_image.setPixmap(QPixmap(ticket_image_path).scaled(150, 100, Qt.KeepAspectRatio))
         ticket_image.setAlignment(Qt.AlignCenter)
