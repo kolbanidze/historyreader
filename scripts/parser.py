@@ -11,6 +11,7 @@ OVERWRITE = False
 if not OVERWRITE:
     print("Выполнение этого скрипта перезапишет bilety.json и превью билетов.")
     print("Измените флаг OVERWRITE на True, если хотите продолжить.")
+    print("Запускайте скрипт из корня приложения (где лежит start.bat).")
     exit(1)
 
 bilety = []
