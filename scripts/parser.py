@@ -1,5 +1,3 @@
-from xml.etree.ElementTree import indent
-
 from bs4 import BeautifulSoup as BS
 from requests import get
 from json import dumps as json_encode
