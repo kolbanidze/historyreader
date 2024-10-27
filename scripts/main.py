@@ -1,28 +1,26 @@
 from PyQt5.QtCore import QSize, Qt
-from PyQt5.QtGui import QFontDatabase, QIcon, QPixmap
+from PyQt5.QtGui import QColor, QFontDatabase, QIcon, QPainter, QPixmap, QBrush
 from PyQt5.QtWidgets import *
 import json
 from datetime import datetime
 import os
 
-ICON_MAIN_MENU = "data\\icons\\main_menu.png"
-ICON_MAIN_PROFILE = "data\\icons\\main_profile.png"
-MAIN_WINDOW_TITLE = "(НАЗВАНИЕ ПРОЕКТА)"
-LABEL_BODY_HEADER_TEXT = "Это интересно"
-LINE_EDIT_MAIN_WINDOW_PLACEHOLDER = "Искать..."
-PUSH_BUTTON_TICKETS_LIST_TEXT = "Список Билетов"
-FONT_SIZE = "15pt"
-TICKET_WIDTH = 300
-TICKET_HEIGH = 200
-
-# TODO: в тесте сделать мастабируемость вопроса
+PATH_FONT_EVOLVENTA = "data\\fonts\\Evolventa.otf"
+PATH_FONT_LUMBERJACK = "data\\fonts\\Lumberjack.otf"
+PATH_ICON_MAIN_MENU = "data\\icons\\main_menu.png"
+PATH_ICON_MAIN_PROFILE = "data\\icons\\main_profile.png"
+PATH_JSON_HOME = "data\\json\\home.json"
+PATH_JSON_TICKETS = "data\\json\\bilety.json"
+PATH_STYLESHEET_HOME = "scripts\\style\\home.css"
+PATH_STYLESHEET_TICKETS_LIST = "scripts\\style\\tickets_list.css"
+PATH_TICKET_IMAGE = "data\\images\\ticket_{}.png"
 
 class TicketDetailWindow(QDialog):
     def __init__(self, ticket):
         super().__init__()
         self.ticket = ticket
         self.setWindowTitle(f"Билет №{ticket['Number']}")
-        self.resize(500, 600)
+        self.setMinimumSize(400, 300)
 
         # Главный макет для билета и теста
         self.layout = QVBoxLayout()
@@ -36,7 +34,6 @@ class TicketDetailWindow(QDialog):
         ticket_text = QLabel(ticket['Text'])
         ticket_text.setOpenExternalLinks(True)
         ticket_text.setWordWrap(True)
-        ticket_text.setStyleSheet(f"font-size: {FONT_SIZE};")
         self.scroll_area.setWidget(ticket_text)
 
         # Кнопка для запуска теста
@@ -52,29 +49,19 @@ class TicketDetailWindow(QDialog):
         self.scroll_area.deleteLater()
         self.start_test_button.deleteLater()
 
-        self.resize(580, 320)
-
         # Загружаем тестовые данные
         self.test_data = self.ticket["Test"]
         self.current_question_index = 0
         self.user_answers = []
 
-        # Прокручиваемая область для текста вопроса
-        self.question_scroll_area = QScrollArea()
-        self.question_scroll_area.setWidgetResizable(True)
-
         # Вопрос и ответы
         self.question_label = QLabel()
-        self.question_label.setWordWrap(True)
-        self.question_label.setStyleSheet(f"font-size: {FONT_SIZE}; font-weight: bold;")
-        self.question_scroll_area.setWidget(self.question_label)
-        self.layout.addWidget(self.question_scroll_area)
+        self.layout.addWidget(self.question_label)
 
         self.answer_buttons = []
         self.answers_layout = QVBoxLayout()
         for i in range(4):
             btn = QRadioButton()
-            btn.setStyleSheet(f"font-size: {FONT_SIZE};")
             self.answer_buttons.append(btn)
             self.answers_layout.addWidget(btn)
         self.layout.addLayout(self.answers_layout)
@@ -162,138 +149,222 @@ class TicketDetailWindow(QDialog):
         with open("stats.json", "w", encoding="utf-8") as f:
             json.dump(stats_data, f, ensure_ascii=False, indent=4)
 
-
-class MainWindow(QMainWindow):
-
-    def pbTicketsListClicked(self):
-        # Переход к прокручиваемому списку билетов при нажатии кнопки
-        self.setCentralWidget(self.scrollAreaTicketsList)
-
+# Screen with tickets list
+class TicketsListScreen(QMainWindow):
     def __init__(self):
         super().__init__()
-        QFontDatabase.addApplicationFont("data\\fonts\\Evolventa.otf")
-        QFontDatabase.addApplicationFont("data\\fonts\\Lumberjack.otf")
 
-        # Загрузка JSON данных
-        with open("data\\json\\main.json", "r", encoding="utf-8") as f:
-            self.strings = json.loads(f.read())
-        with open("data\\json\\bilety.json", "r", encoding="utf-8") as f:
-            self.tickets = json.loads(f.read())
-
-        # Основной фон и макет
-        self.wBackground = QWidget()
-        self.wBackground.setProperty("class", "Background")
-        self.vbBackground = QVBoxLayout()
-        self.vbBackground.setContentsMargins(0, 0, 0, 0)
+        # Background
+        self.w_background = QWidget()
+        self.vb_background = QVBoxLayout()
 
         # Header
-        self.wHeader = QWidget()
-        self.hbHeader = QHBoxLayout()
-        self.pbProfile = QPushButton()
-        self.pbProfile.setProperty("class", "Profile")
-        self.pbProfile.setIcon(QIcon(ICON_MAIN_PROFILE))
-        self.pbProfile.setIconSize(QSize(60, 60))
-        self.pbMenu = QPushButton()
-        self.pbMenu.setProperty("class", "Menu")
-        self.pbMenu.setIcon(QIcon(ICON_MAIN_MENU))
-        self.pbMenu.setIconSize(QSize(60, 60))
-        self.leSearch = QLineEdit()
-        self.leSearch.setProperty("class", "Search")
-        self.hbHeader.addWidget(self.pbProfile, stretch=1)
-        self.hbHeader.addWidget(self.pbMenu, stretch=1)
-        self.hbHeader.addWidget(self.leSearch, stretch=8)
-        self.wHeader.setLayout(self.hbHeader)
+        self.w_header = QWidget()
+        self.hb_header = QHBoxLayout()
+        self.pb_home = QPushButton("Home")
 
-        # Scrollable Body
-        self.saBody = QScrollArea()
-        self.saBody.setProperty("class", "saBody")
-        self.wBody = QWidget()
-        self.vbBody = QVBoxLayout()
-        self.vbBody.setContentsMargins(0, 0, 0, 0)
-        self.lBodyHeader = QLabel(LABEL_BODY_HEADER_TEXT)
-        self.lBodyHeader.setProperty("class", "BodyHeader")
-        self.vbBody.addWidget(self.lBodyHeader)
+        # Body
+        self.sa_body = QScrollArea()
+        self.w_body = QWidget()
+        self.g_body = QGridLayout()
 
-        # "Это интересно" секция
-        self.wFacts = list()
-        self.hbFacts = list()
-        self.lFactImages = list()
-        self.lFactTexts = list()
-        for i in range(3):
-            wFact = QWidget()
-            if i < 2:
-                wFact.setProperty("class", "Fact")
-            self.wFacts.append(wFact)
+        # Background layout
+        self.vb_background.addWidget(self.w_header, stretch=1)
+        self.vb_background.addWidget(self.sa_body, stretch=9)
+        self.w_background.setLayout(self.vb_background)
 
-            hbFact = QHBoxLayout()
-            lFactImage = QLabel()
-            lFactImage.setPixmap(QPixmap(f"data\\images\\fact_{i + 1}.png"))
-            lFactImage.setAlignment(Qt.AlignCenter)
-            lFactText = QLabel(self.strings.get(f"fact_{i + 1}_text", ""))
-            lFactText.setProperty("class", "FactText")
-            lFactText.setWordWrap(True)
-            if i % 2 == 0:
-                hbFact.addWidget(lFactImage, stretch=1)
-                hbFact.addWidget(lFactText, stretch=9, alignment=Qt.AlignTop)
-            else:
-                hbFact.addWidget(lFactText, stretch=9, alignment=Qt.AlignTop)
-                hbFact.addWidget(lFactImage, stretch=1)
+        # Background properties
+        self.w_background.setProperty("class", "Background")
+        self.vb_background.setContentsMargins(0, 0, 0, 0)
+        self.vb_background.setSpacing(0)
 
-            wFact.setLayout(hbFact)
-            self.vbBody.addWidget(wFact)
+        # Header layout
+        self.hb_header.addWidget(self.pb_home, alignment=Qt.AlignLeft)
+        self.w_header.setLayout(self.hb_header)
 
-        # Создаем прокручиваемую область для списка билетов
-        self.scrollAreaTicketsList = QScrollArea()
-        self.scrollAreaTicketsList.setWidgetResizable(True)
+        # Header properties
+        self.pb_home.setProperty("class", "HeaderButton")
 
-        # Основной виджет для сетки билетов
-        self.wTicketsList = QWidget()
-        self.gridTickets = QGridLayout()
-        self.gridTickets.setSpacing(10)
-        self.update_ticket_display(self.tickets)  # Первоначальное отображение всех билетов
-        self.wTicketsList.setLayout(self.gridTickets)
+        # Body layout
+        self.w_body.setLayout(self.g_body)
 
-        # Добавляем сетку билетов в прокручиваемую область
-        self.scrollAreaTicketsList.setWidget(self.wTicketsList)
+        # Body properties
+        self.sa_body.setProperty("class", "saBody")
+        self.sa_body.setWidgetResizable(True)
+        self.sa_body.setWidget(self.w_body)
+        for i in range(25):
+            # Ticket
+            w_ticket = QWidget()
+            hb_ticket = QHBoxLayout()
+            l_ticket_image = QLabel()
+            l_ticket_number = QLabel()
 
-        # Добавляем виджет тела
-        self.wBody.setLayout(self.vbBody)
-        self.saBody.setWidgetResizable(True)
-        self.saBody.setWidget(self.wBody)
+            # Ticket layout
+            hb_ticket.addWidget(l_ticket_number, alignment=Qt.AlignCenter)
+            hb_ticket.addWidget(l_ticket_image, alignment=Qt.AlignRight)
+            w_ticket.setLayout(hb_ticket)
 
-        # Footer Button
-        self.pbTicketsList = QPushButton(PUSH_BUTTON_TICKETS_LIST_TEXT)
-        self.pbTicketsList.setProperty("class", "TicketsList")
+            # Grid layout
+            r = i // 4
+            c = i % 4
+            self.g_body.addWidget(w_ticket, r, c)
 
-        # Background Layout
-        self.vbBackground.addWidget(self.wHeader, stretch=1)
-        self.vbBackground.addWidget(self.saBody, stretch=8)
-        self.vbBackground.addWidget(self.pbTicketsList, stretch=1)
-        self.vbBackground.setSpacing(0)
-        self.wBackground.setLayout(self.vbBackground)
+            # Round image
+            pm_image = QPixmap(PATH_TICKET_IMAGE.format(i + 1)).scaled(200, 150)
+            rad = 40
+            pm_rounded = QPixmap(pm_image.size())
+            pm_rounded.fill(QColor("transparent"))
+            p = QPainter(pm_rounded)
+            p.setRenderHint(QPainter.Antialiasing)
+            p.setBrush(QBrush(pm_image))
+            p.setPen(Qt.NoPen)
+            p.drawRoundedRect(pm_image.rect(), rad, rad)
+            p.end()
 
-        # Main Window Settings
-        self.leSearch.setPlaceholderText(LINE_EDIT_MAIN_WINDOW_PLACEHOLDER)
-        self.resize(1136, 639)
-        # self.setMaximumWidth(1136)
-        # self.setMaximumHeight(639)
-        self.setWindowTitle(MAIN_WINDOW_TITLE)
-        self.setCentralWidget(self.wBackground)
+            # Ticket properties
+            l_ticket_image.setPixmap(pm_rounded)
+            l_ticket_image.setProperty("class", "TicketImage")
+            w_ticket.setProperty("class", "Ticket")
+            l_ticket_number.setText(str(i + 1))
+            l_ticket_number.setProperty("class", "TicketNumber")
 
-        # Load Styles
-        with open("scripts\\main.css", "r") as f:
+        # Stylesheet
+        with open(PATH_STYLESHEET_TICKETS_LIST, "r") as f:
             self.setStyleSheet(f.read())
 
-        # Подключение обработчика для строки поиска
-        self.leSearch.textChanged.connect(self.filter_tickets)
+        self.setCentralWidget(self.w_background)
 
-        # Подключение обработчика для кнопки меню
-        self.pbMenu.clicked.connect(self.open_test_menu)
+# Screen with interesting facts
+class HomeScreen(QMainWindow):
+    def __init__(self):
+        super().__init__()
 
-        # Подключение к обработчику клика по кнопке списка билетов
-        self.pbTicketsList.clicked.connect(self.pbTicketsListClicked)
+        # JSON
+        self.strings = dict()
+        with open(PATH_JSON_HOME, "r", encoding="utf-8") as f:
+            self.strings = json.loads(f.read())
 
-    # Оставляем остальные методы без изменений
+        # Background
+        self.w_background = QWidget(parent=self)
+        self.vb_background = QVBoxLayout()
+
+        # Header
+        self.w_header = QWidget()
+        self.hb_header = QHBoxLayout()
+        self.pb_menu = QPushButton()
+        self.pb_profile = QPushButton()
+        self.le_search = QLineEdit()
+
+        # Body
+        self.sa_body = QScrollArea()
+        self.l_body_header = QLabel(self.strings["this_is_interesting"])
+        self.w_body = QWidget()
+        self.vb_body = QVBoxLayout()
+
+        # Facts
+        self.w_facts = list()
+
+        # Footer
+        self.pb_tickets_list = QPushButton(self.strings["tickets_list"])
+
+        # Background layout
+        self.vb_background.addWidget(self.w_header, stretch=1)
+        self.vb_background.addWidget(self.sa_body, stretch=8)
+        self.vb_background.addWidget(self.pb_tickets_list, stretch=1)
+        self.w_background.setLayout(self.vb_background)
+
+        # Background properties
+        self.w_background.setProperty("class", "Background")
+        self.vb_background.setContentsMargins(0, 0, 0, 0)
+        self.vb_background.setSpacing(0)
+
+        # Header layout
+        self.hb_header.addWidget(self.pb_menu, stretch=1)
+        self.hb_header.addWidget(self.pb_profile, stretch=1)
+        self.hb_header.addWidget(self.le_search, stretch=8)
+        self.w_header.setLayout(self.hb_header)
+
+        # Header properties
+        self.pb_profile.setProperty("class", "HeaderButton")
+        self.pb_profile.setIcon(QIcon(PATH_ICON_MAIN_PROFILE))
+        self.pb_profile.setIconSize(QSize(60, 60))
+        self.pb_menu.setProperty("class", "HeaderButton")
+        self.pb_menu.setIcon(QIcon(PATH_ICON_MAIN_MENU))
+        self.pb_menu.setIconSize(QSize(60, 60))
+        self.le_search.setProperty("class", "Search")
+        self.le_search.setPlaceholderText(self.strings["search"])
+
+        # Body layout
+        self.vb_body.addWidget(self.l_body_header)
+        for i in range(3):
+            w_fact = QWidget()
+            if i < 2:
+                w_fact.setProperty("class", "Fact")
+            self.w_facts.append(w_fact)
+
+            hb_fact = QHBoxLayout()
+            l_fact_image = QLabel()
+            l_fact_image.setPixmap(QPixmap(f"data\\images\\fact_{i + 1}.png"))
+            l_fact_image.setAlignment(Qt.AlignCenter)
+            l_fact_text = QLabel(self.strings.get(f"fact_{i + 1}_text", ""))
+            l_fact_text.setProperty("class", "FactText")
+            l_fact_text.setWordWrap(True)
+            if i % 2 == 0:
+                hb_fact.addWidget(l_fact_image, stretch=1)
+                hb_fact.addWidget(l_fact_text, stretch=9, alignment=Qt.AlignTop)
+            else:
+                hb_fact.addWidget(l_fact_text, stretch=9, alignment=Qt.AlignTop)
+                hb_fact.addWidget(l_fact_image, stretch=1)
+
+            w_fact.setLayout(hb_fact)
+            self.vb_body.addWidget(w_fact)
+        self.w_body.setLayout(self.vb_body)
+
+        # Body properties
+        self.w_body.setProperty("class", "wBody")
+        self.l_body_header.setProperty("class", "BodyHeader")
+        self.sa_body.setProperty("class", "saBody")
+        self.sa_body.setWidgetResizable(True)
+        self.sa_body.setWidget(self.w_body)
+        self.vb_body.setContentsMargins(0, 0, 0, 0)
+
+        # Footer Properties
+        self.pb_tickets_list.setProperty("class", "TicketsList")
+
+        # Stylesheet
+        with open(PATH_STYLESHEET_HOME, "r") as f:
+            self.setStyleSheet(f.read())
+
+        self.setCentralWidget(self.w_background)
+
+class MainWidget(QStackedWidget):
+    def __init__(self):
+        super().__init__()
+
+        # Load fonts
+        QFontDatabase.addApplicationFont(PATH_FONT_EVOLVENTA)
+        QFontDatabase.addApplicationFont(PATH_FONT_LUMBERJACK)
+
+        # JSON
+        self.tickets = list()
+        with open(PATH_JSON_TICKETS, "r", encoding="utf-8") as f:
+            self.tickets = json.loads(f.read())
+
+        # Screens
+        self.s_home = HomeScreen()
+        self.s_tickets_list = TicketsListScreen()
+
+        # Screens properties
+        self.s_home.pb_tickets_list.clicked.connect(self.home_pb_tickets_list_clicked)
+        self.s_tickets_list.pb_home.clicked.connect(self.tickets_list_pb_home)
+
+        # Properties
+        self.setWindowTitle(self.s_home.strings["window_title"])
+        self.resize(1200, 700)
+        self.addWidget(self.s_home)
+        self.addWidget(self.s_tickets_list)
+
+        self.setCurrentWidget(self.s_home)
 
     def create_ticket_widget(self, ticket):
         ticket_widget = QWidget()
@@ -302,7 +373,7 @@ class MainWindow(QMainWindow):
         # Load ticket image
         ticket_image_path = os.path.join("data", "images", f"ticket_{ticket['Number']}.png")
         ticket_image = QLabel()
-        ticket_image.setPixmap(QPixmap(ticket_image_path).scaled(TICKET_WIDTH, TICKET_HEIGH, Qt.KeepAspectRatio))
+        ticket_image.setPixmap(QPixmap(ticket_image_path).scaled(150, 100, Qt.KeepAspectRatio))
         ticket_image.setAlignment(Qt.AlignCenter)
         ticket_image.setCursor(Qt.PointingHandCursor)  # Указатель при наведении
 
@@ -311,7 +382,6 @@ class MainWindow(QMainWindow):
 
         # Ticket number label
         ticket_label = QLabel(f"Билет №{ticket['Number']}")
-        ticket_label.setStyleSheet("font-size: 10pt;")
         ticket_label.setAlignment(Qt.AlignCenter)
         ticket_label.setProperty("class", "TicketLabel")
 
@@ -321,14 +391,28 @@ class MainWindow(QMainWindow):
         ticket_widget.setLayout(ticket_layout)
         return ticket_widget
 
+    def filter_tickets(self, search_text):
+        search_text = search_text.lower()  # Приводим текст к нижнему регистру
+        filtered_tickets = [ticket for ticket in self.tickets if
+                            search_text in ticket['Text'].lower() or search_text in str(ticket['Number'])]
+        self.update_ticket_display(filtered_tickets)
+
+    # Move to tickets list screen
+    def home_pb_tickets_list_clicked(self):
+        self.setCurrentWidget(self.s_tickets_list)
+
     def open_ticket_detail(self, ticket):
         detail_window = TicketDetailWindow(ticket)
         detail_window.exec_()  # Отображение окна как модального
 
+    # Move to home screen
+    def tickets_list_pb_home(self):
+        self.setCurrentWidget(self.s_home)
+
     def update_ticket_display(self, tickets):
         # Очищаем сетку перед добавлением новых билетов
-        for i in reversed(range(self.gridTickets.count())):
-            widget = self.gridTickets.itemAt(i).widget()
+        for i in reversed(range(self.g_tickets.count())):
+            widget = self.g_tickets.itemAt(i).widget()
             if widget is not None:
                 widget.deleteLater()  # Удаляем старые виджеты
         # Обновляем отображение билетов
@@ -336,19 +420,10 @@ class MainWindow(QMainWindow):
             ticket_widget = self.create_ticket_widget(ticket)
             row = i // 3
             col = i % 3
-            self.gridTickets.addWidget(ticket_widget, row, col)
-
-    def filter_tickets(self, search_text):
-        search_text = search_text.lower()  # Приводим текст к нижнему регистру
-        filtered_tickets = [ticket for ticket in self.tickets if
-                            search_text in ticket['Text'].lower() or search_text in str(ticket['Number'])]
-        self.update_ticket_display(filtered_tickets)
-
-    def open_test_menu(self):
-        pass
+            self.g_tickets.addWidget(ticket_widget, row, col)
 
 if __name__ == "__main__":
     app = QApplication([])
-    mainWindow = MainWindow()
-    mainWindow.show()
+    MainWidget = MainWidget()
+    MainWidget.show()
     app.exec()
