@@ -228,6 +228,10 @@ class TestMenuWindow(QMainWindow):
 
 
 class MainWindow(QMainWindow):
+
+    def pbTicketsListClicked(self):
+        self.setCentralWidget(self.wTicketsList)
+
     def __init__(self):
         super().__init__()
         QFontDatabase.addApplicationFont("data\\fonts\\Evolventa.otf")
@@ -301,13 +305,14 @@ class MainWindow(QMainWindow):
             wFact.setLayout(hbFact)
             self.vbBody.addWidget(wFact)
 
+        self.wTicketsList = QWidget()
         # Сетка билетов
         self.gridTickets = QGridLayout()
         self.gridTickets.setSpacing(10)
         self.update_ticket_display(self.tickets)  # Первоначальное отображение всех билетов
 
         # Добавление сетки билетов в макет
-        self.vbBody.addLayout(self.gridTickets)
+        self.wTicketsList.setLayout(self.gridTickets)
         self.wBody.setLayout(self.vbBody)
         self.saBody.setWidgetResizable(True)
         self.saBody.setWidget(self.wBody)
@@ -340,6 +345,8 @@ class MainWindow(QMainWindow):
 
         # Подключение обработчика для кнопки меню
         self.pbMenu.clicked.connect(self.open_test_menu)
+
+        self.pbTicketsList.clicked.connect(self.pbTicketsListClicked)
 
     def create_ticket_widget(self, ticket):
         ticket_widget = QWidget()
