@@ -16,59 +16,55 @@ PUSH_BUTTON_TICKETS_LIST_TEXT = "Список Билетов"
 class TicketDetailWindow(QDialog):
     def __init__(self, ticket):
         super().__init__()
+        self.ticket = ticket
         self.setWindowTitle(f"Билет №{ticket['Number']}")
         self.setMinimumSize(400, 300)
 
-        # Создаем разметку для отображения текста билета
+        # Главный макет для билета и теста
         self.layout = QVBoxLayout()
-
-        # Область прокрутки для текста билета
-        scroll_area = QScrollArea()
-        scroll_area.setWidgetResizable(True)  # Разрешаем виджету изменять размеры внутри области прокрутки
-
-        # Текст билета с поддержкой HTML
-        ticket_text = ticket['Text']  # Текст билета с тегами
-        text_label = QLabel(ticket_text)
-        text_label.setOpenExternalLinks(True)  # Для ссылок (если будут)
-        text_label.setWordWrap(True)  # Перенос строк
-        text_label.setAlignment(Qt.AlignTop | Qt.AlignLeft)  # Выравнивание текста по верхнему краю
-
-        # Добавляем QLabel с текстом билета в виджет прокрутки
-        scroll_area.setWidget(text_label)
-
-        # Добавляем область прокрутки в основной макет
-        self.layout.addWidget(scroll_area)
         self.setLayout(self.layout)
 
-class TestWindow(QDialog):
-    def __init__(self, test_data):
-        super().__init__()
-        self.setWindowTitle(f"Тест для билета №{test_data['Number']}")
-        self.setMinimumSize(600, 400)
+        # Прокручиваемая область для текста билета
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidgetResizable(True)
 
-        self.test_data = test_data["Test"]
-        self.ticket_number = test_data["Number"]
+        # Текст билета
+        ticket_text = QLabel(ticket['Text'])
+        ticket_text.setOpenExternalLinks(True)
+        ticket_text.setWordWrap(True)
+        self.scroll_area.setWidget(ticket_text)
+
+        # Кнопка для запуска теста
+        self.start_test_button = QPushButton("Начать тест")
+        self.start_test_button.clicked.connect(self.start_test)
+
+        # Добавляем прокрутку и кнопку в макет
+        self.layout.addWidget(self.scroll_area)
+        self.layout.addWidget(self.start_test_button)
+
+    def start_test(self):
+        # Удаляем виджет с текстом билета и кнопку
+        self.scroll_area.deleteLater()
+        self.start_test_button.deleteLater()
+
+        # Загружаем тестовые данные
+        self.test_data = self.ticket["Test"]
         self.current_question_index = 0
         self.user_answers = []
 
-        # Основная разметка
-        self.layout = QVBoxLayout()
-        self.setLayout(self.layout)
-
-        # Вопрос
+        # Вопрос и ответы
         self.question_label = QLabel()
         self.layout.addWidget(self.question_label)
 
-        # Варианты ответов
         self.answer_buttons = []
         self.answers_layout = QVBoxLayout()
-        for i in range(4):  # Максимум 4 ответа
+        for i in range(4):
             btn = QRadioButton()
             self.answer_buttons.append(btn)
             self.answers_layout.addWidget(btn)
         self.layout.addLayout(self.answers_layout)
 
-        # Кнопки "Далее" и "Завершить"
+        # Кнопки "Далее" и "Завершить тест"
         self.next_button = QPushButton("Далее")
         self.next_button.clicked.connect(self.next_question)
         self.layout.addWidget(self.next_button)
@@ -78,28 +74,30 @@ class TestWindow(QDialog):
         self.finish_button.setVisible(False)
         self.layout.addWidget(self.finish_button)
 
-        self.show_question(self.current_question_index)
+        # Показ первого вопроса
+        self.show_question(0)
 
     def show_question(self, index):
         """Отображает текущий вопрос и варианты ответов"""
         question_data = self.test_data[index]
         self.question_label.setText(question_data["Question"])
 
-        # Обновляем текст для кнопок с ответами
+        # Обновляем текст кнопок для ответов
         for i, answer_text in enumerate(question_data["Answers"]):
             self.answer_buttons[i].setText(answer_text)
             self.answer_buttons[i].setVisible(True)
             self.answer_buttons[i].setChecked(False)
+
         # Скрываем неиспользуемые кнопки
         for i in range(len(question_data["Answers"]), len(self.answer_buttons)):
             self.answer_buttons[i].setVisible(False)
 
-        # Если это последний вопрос, показываем кнопку "Завершить"
+        # Показ кнопок навигации
         self.next_button.setVisible(index < len(self.test_data) - 1)
         self.finish_button.setVisible(index == len(self.test_data) - 1)
 
     def next_question(self):
-        """Переход к следующему вопросу и сохранение ответа"""
+        """Сохраняет ответ и переходит к следующему вопросу"""
         self.save_answer()
         self.current_question_index += 1
         if self.current_question_index < len(self.test_data):
@@ -111,121 +109,43 @@ class TestWindow(QDialog):
             if btn.isChecked():
                 self.user_answers.append(btn.text())
                 return
-        # Если ответ не выбран, сохраняем None
-        self.user_answers.append(None)
+        self.user_answers.append(None)  # Если ответ не выбран
 
     def finish_test(self):
-        """Завершает тест, показывает результаты и сохраняет их в stats.json"""
+        """Завершает тест и показывает результаты"""
         self.save_answer()
-        correct_answers = sum(1 for user_answer, question_data in zip(self.user_answers, self.test_data)
-                              if user_answer == question_data["CorrectAnswer"])
+        correct_answers = sum(
+            1 for user_answer, question_data in zip(self.user_answers, self.test_data)
+            if user_answer == question_data["CorrectAnswer"]
+        )
 
         QMessageBox.information(
-            self,
-            "Результат теста",
+            self, "Результат теста",
             f"Вы ответили правильно на {correct_answers} из {len(self.test_data)} вопросов."
         )
 
-        # Сохраняем результаты в stats.json
+        # Сохраняем результат
         self.save_test_result(correct_answers, len(self.test_data))
         self.accept()
 
     def save_test_result(self, correct_answers, total_questions):
-        """Сохраняет результат теста в stats.json"""
+        """Сохраняет результаты в stats.json"""
         result = {
-            "Bilet": self.ticket_number,
+            "Bilet": self.ticket["Number"],
             "Time": datetime.now().isoformat(),
             "CorrectAnswers": correct_answers,
             "TotalAnswers": total_questions
         }
 
-        # Чтение текущих данных из stats.json
         try:
             with open("stats.json", "r", encoding="utf-8") as f:
                 stats_data = json.load(f)
         except (FileNotFoundError, json.JSONDecodeError):
             stats_data = []
 
-        # Добавление нового результата
         stats_data.append(result)
-
-        # Сохранение обновленных данных
         with open("stats.json", "w", encoding="utf-8") as f:
             json.dump(stats_data, f, ensure_ascii=False, indent=4)
-
-
-class TestMenuWindow(QMainWindow):
-    def __init__(self, tickets, parent=None):
-        super().__init__(parent)
-        self.tickets = tickets
-        self.setWindowTitle("Меню тестов")
-        # self.setMinimumSize(800, 600)
-        self.resize(800, 600)
-
-        # Сетка для тестов
-        self.gridTests = QGridLayout()
-        self.gridTests.setSpacing(10)
-
-        # Создаем основной виджет
-        self.centralWidget = QWidget()
-        self.centralWidget.setLayout(self.gridTests)
-        self.setCentralWidget(self.centralWidget)
-
-        # Обновляем отображение тестов и добавляем обработчик на изменение размера
-        self.update_test_display()
-        self.resizeEvent = self.on_resize
-
-    def create_test_widget(self, ticket, image_width):
-        test_widget = QWidget()
-        test_layout = QVBoxLayout()
-
-        # Загружаем изображение теста
-        test_image_path = os.path.join("data", "images", f"ticket_{ticket['Number']}.png")
-        test_image = QLabel()
-        test_image.setPixmap(QPixmap(test_image_path).scaled(image_width, int(image_width * 0.67), Qt.KeepAspectRatio, Qt.SmoothTransformation))
-        test_image.setAlignment(Qt.AlignCenter)
-        test_image.setCursor(Qt.PointingHandCursor)
-
-        # Сигнал для открытия теста
-        test_image.mousePressEvent = lambda event: self.open_test(ticket)
-
-        # Номер теста
-        test_label = QLabel(f"Тест №{ticket['Number']}")
-        test_label.setAlignment(Qt.AlignCenter)
-        test_label.setProperty("class", "TestLabel")
-
-        # Добавляем в разметку
-        test_layout.addWidget(test_image)
-        test_layout.addWidget(test_label)
-        test_widget.setLayout(test_layout)
-        return test_widget
-
-    def open_test(self, ticket):
-        """Открытие окна для прохождения теста"""
-        test_window = TestWindow(ticket)
-        test_window.exec_()
-
-    def update_test_display(self):
-        # Очищаем сетку перед добавлением новых тестов
-        for i in reversed(range(self.gridTests.count())):
-            widget = self.gridTests.itemAt(i).widget()
-            if widget is not None:
-                widget.deleteLater()
-
-        # Рассчитываем количество колонок в зависимости от ширины окна
-        grid_width = self.centralWidget.width()
-        column_count = max(1, grid_width // 200)  # Например, 200 пикселей на колонку
-        image_width = (grid_width - 10 * (column_count + 1)) // column_count
-
-        # Обновляем отображение тестов с учетом количества колонок
-        for i, ticket in enumerate(self.tickets):
-            test_widget = self.create_test_widget(ticket, image_width)
-            row = i // column_count
-            col = i % column_count
-            self.gridTests.addWidget(test_widget, row, col)
-
-    def on_resize(self, event):
-        self.update_test_display()
 
 
 class MainWindow(QMainWindow):
@@ -409,9 +329,7 @@ class MainWindow(QMainWindow):
         self.update_ticket_display(filtered_tickets)
 
     def open_test_menu(self):
-        self.testMenuWindow = TestMenuWindow(self.tickets, self)
-        self.testMenuWindow.show()  # Открываем окно меню тестов
-
+        pass
 
 if __name__ == "__main__":
     app = QApplication([])
