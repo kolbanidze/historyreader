@@ -11,6 +11,9 @@ MAIN_WINDOW_TITLE = "(НАЗВАНИЕ ПРОЕКТА)"
 LABEL_BODY_HEADER_TEXT = "Это интересно"
 LINE_EDIT_MAIN_WINDOW_PLACEHOLDER = "Искать..."
 PUSH_BUTTON_TICKETS_LIST_TEXT = "Список Билетов"
+FONT_SIZE = "15pt"
+TICKET_WIDTH = 300
+TICKET_HEIGH = 200
 
 # TODO: в тесте сделать мастабируемость вопроса
 
@@ -19,7 +22,7 @@ class TicketDetailWindow(QDialog):
         super().__init__()
         self.ticket = ticket
         self.setWindowTitle(f"Билет №{ticket['Number']}")
-        self.setMinimumSize(400, 300)
+        self.resize(500, 600)
 
         # Главный макет для билета и теста
         self.layout = QVBoxLayout()
@@ -33,6 +36,7 @@ class TicketDetailWindow(QDialog):
         ticket_text = QLabel(ticket['Text'])
         ticket_text.setOpenExternalLinks(True)
         ticket_text.setWordWrap(True)
+        ticket_text.setStyleSheet(f"font-size: {FONT_SIZE};")
         self.scroll_area.setWidget(ticket_text)
 
         # Кнопка для запуска теста
@@ -48,19 +52,29 @@ class TicketDetailWindow(QDialog):
         self.scroll_area.deleteLater()
         self.start_test_button.deleteLater()
 
+        self.resize(580, 320)
+
         # Загружаем тестовые данные
         self.test_data = self.ticket["Test"]
         self.current_question_index = 0
         self.user_answers = []
 
+        # Прокручиваемая область для текста вопроса
+        self.question_scroll_area = QScrollArea()
+        self.question_scroll_area.setWidgetResizable(True)
+
         # Вопрос и ответы
         self.question_label = QLabel()
-        self.layout.addWidget(self.question_label)
+        self.question_label.setWordWrap(True)
+        self.question_label.setStyleSheet(f"font-size: {FONT_SIZE}; font-weight: bold;")
+        self.question_scroll_area.setWidget(self.question_label)
+        self.layout.addWidget(self.question_scroll_area)
 
         self.answer_buttons = []
         self.answers_layout = QVBoxLayout()
         for i in range(4):
             btn = QRadioButton()
+            btn.setStyleSheet(f"font-size: {FONT_SIZE};")
             self.answer_buttons.append(btn)
             self.answers_layout.addWidget(btn)
         self.layout.addLayout(self.answers_layout)
@@ -288,7 +302,7 @@ class MainWindow(QMainWindow):
         # Load ticket image
         ticket_image_path = os.path.join("data", "images", f"ticket_{ticket['Number']}.png")
         ticket_image = QLabel()
-        ticket_image.setPixmap(QPixmap(ticket_image_path).scaled(150, 100, Qt.KeepAspectRatio))
+        ticket_image.setPixmap(QPixmap(ticket_image_path).scaled(TICKET_WIDTH, TICKET_HEIGH, Qt.KeepAspectRatio))
         ticket_image.setAlignment(Qt.AlignCenter)
         ticket_image.setCursor(Qt.PointingHandCursor)  # Указатель при наведении
 
@@ -297,6 +311,7 @@ class MainWindow(QMainWindow):
 
         # Ticket number label
         ticket_label = QLabel(f"Билет №{ticket['Number']}")
+        ticket_label.setStyleSheet("font-size: 10pt;")
         ticket_label.setAlignment(Qt.AlignCenter)
         ticket_label.setProperty("class", "TicketLabel")
 
