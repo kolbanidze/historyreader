@@ -22,13 +22,22 @@ class TicketDetailWindow(QDialog):
         # Создаем разметку для отображения текста билета
         self.layout = QVBoxLayout()
 
+        # Область прокрутки для текста билета
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)  # Разрешаем виджету изменять размеры внутри области прокрутки
+
         # Текст билета с поддержкой HTML
         ticket_text = ticket['Text']  # Текст билета с тегами
         text_label = QLabel(ticket_text)
         text_label.setOpenExternalLinks(True)  # Для ссылок (если будут)
         text_label.setWordWrap(True)  # Перенос строк
+        text_label.setAlignment(Qt.AlignTop | Qt.AlignLeft)  # Выравнивание текста по верхнему краю
 
-        self.layout.addWidget(text_label)
+        # Добавляем QLabel с текстом билета в виджет прокрутки
+        scroll_area.setWidget(text_label)
+
+        # Добавляем область прокрутки в основной макет
+        self.layout.addWidget(scroll_area)
         self.setLayout(self.layout)
 
 class TestWindow(QDialog):
@@ -170,7 +179,7 @@ class TestMenuWindow(QMainWindow):
         test_layout = QVBoxLayout()
 
         # Загружаем изображение теста
-        test_image_path = os.path.join("data", "images", f"ticket_{ticket['Number']}.png")
+        test_image_path = os.path.join("History", "Images", f"{ticket['Number']}.jpeg")
         test_image = QLabel()
         test_image.setPixmap(QPixmap(test_image_path).scaled(image_width, int(image_width * 0.67), Qt.KeepAspectRatio, Qt.SmoothTransformation))
         test_image.setAlignment(Qt.AlignCenter)
@@ -337,7 +346,7 @@ class MainWindow(QMainWindow):
         ticket_layout = QVBoxLayout()
 
         # Load ticket image
-        ticket_image_path = os.path.join("data", "images", f"ticket_{ticket['Number']}.png")
+        ticket_image_path = os.path.join("History", "Images", f"{ticket['Number']}.jpeg")
         ticket_image = QLabel()
         ticket_image.setPixmap(QPixmap(ticket_image_path).scaled(150, 100, Qt.KeepAspectRatio))
         ticket_image.setAlignment(Qt.AlignCenter)
