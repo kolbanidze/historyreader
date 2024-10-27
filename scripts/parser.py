@@ -11,7 +11,7 @@ headers = {'User-Agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 
 
 PARSE_TICKETS = True
 PARSE_IMAGES = False
-OVERWRITE = True
+OVERWRITE = False
 if not OVERWRITE:
     print("Выполнение этого скрипта перезапишет bilety.json и превью билетов.")
     print("Измените флаг OVERWRITE на True, если хотите продолжить.")
