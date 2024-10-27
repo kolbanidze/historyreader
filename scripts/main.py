@@ -12,6 +12,7 @@ LABEL_BODY_HEADER_TEXT = "Это интересно"
 LINE_EDIT_MAIN_WINDOW_PLACEHOLDER = "Искать..."
 PUSH_BUTTON_TICKETS_LIST_TEXT = "Список Билетов"
 
+# TODO: в тесте сделать мастабируемость вопроса
 
 class TicketDetailWindow(QDialog):
     def __init__(self, ticket):
