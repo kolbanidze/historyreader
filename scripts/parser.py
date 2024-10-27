@@ -1,17 +1,17 @@
+from xml.etree.ElementTree import indent
+
 from bs4 import BeautifulSoup as BS
 from requests import get
 from json import dumps as json_encode
 
 # ВЫПОЛНЯЙТЕ СКРИПТ ИЗ ПОД ПАПКИ, ГДЕ ОН ЛЕЖИТ (Т.Е. scripts)
 
-# Парсинг содержимого билетов
-
 BASE_URL = "https://xn----7sbb3acajbee5aggvnq.xn--90ais/b"
 headers = {'User-Agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36'}
 
 PARSE_TICKETS = True
 PARSE_IMAGES = False
-OVERWRITE = False
+OVERWRITE = True
 if not OVERWRITE:
     print("Выполнение этого скрипта перезапишет bilety.json и превью билетов.")
     print("Измените флаг OVERWRITE на True, если хотите продолжить.")
@@ -43,9 +43,8 @@ if PARSE_TICKETS:
                                  "CorrectAnswer": "A"}]})
 
     with open("..\\data\\json\\bilety.json", "w", encoding='utf-8') as file:
-        file.write(json_encode(bilety, ensure_ascii=False))
+        file.write(json_encode(bilety, ensure_ascii=False, indent=4))
 
-# Парсинг картинок к билетам
 if PARSE_IMAGES:
     for i in range(1,26):
         r = get(BASE_URL+str(i), headers=headers)
