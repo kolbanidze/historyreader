@@ -10,6 +10,7 @@ PATH_FONT_LUMBERJACK = "data\\fonts\\Lumberjack.otf"
 PATH_ICON_MAIN_MENU = "data\\icons\\main_menu.png"
 PATH_ICON_MAIN_PROFILE = "data\\icons\\main_profile.png"
 PATH_JSON_HOME = "data\\json\\home.json"
+PATH_JSON_TICKET = "data\\json\\ticket.json"
 PATH_JSON_TICKETS = "data\\json\\bilety.json"
 PATH_STYLESHEET_HOME = "scripts\\style\\home.css"
 PATH_STYLESHEET_TICKET = "scripts\\style\\ticket.css"
@@ -156,7 +157,10 @@ class TicketScreen(QMainWindow):
         super().__init__()
 
         # JSON
+        self.strings = dict()
         self.tickets = list()
+        with open(PATH_JSON_TICKET, "r", encoding="utf-8") as f:
+            self.strings = json.loads(f.read())
         with open(PATH_JSON_TICKETS, "r", encoding="utf-8") as f:
             self.tickets = json.loads(f.read())
 
@@ -171,14 +175,14 @@ class TicketScreen(QMainWindow):
         self.hb_header_top = QHBoxLayout()
         self.pb_back = QPushButton("Back")
         self.pb_home = QPushButton("Home")
-        self.l_ticket_title = QLabel("1 Билет")
+        self.l_ticket_title = QLabel()
 
         # Body
         self.sa_body = QScrollArea()
         self.l_ticket_content = QLabel()
 
         # Footer
-        self.pb_test = QPushButton("Тест")
+        self.pb_test = QPushButton(self.strings["test"])
 
         # Background layout
         self.vb_background.addWidget(self.w_header)
@@ -223,7 +227,7 @@ class TicketScreen(QMainWindow):
 
     def refresh(self, ticket_index: int):
         ticket = self.tickets[ticket_index]
-        self.l_ticket_title.setText(f"{ticket.get("Number")} Билет")
+        self.l_ticket_title.setText(self.strings["ticket_title"].format(ticket.get("Number")))
         self.l_ticket_content.setText(ticket.get("Text"))
 
 # Screen with tickets list
