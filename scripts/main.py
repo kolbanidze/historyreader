@@ -22,7 +22,6 @@ PATH_PROFILES = "data\\json\\profiles.json"
 
 user = None
 
-# TODO: добавить сохранение тестов
 # TODO: переделать сообщение о прохождении теста
 
 class StatisticsDialog(QDialog):
@@ -278,6 +277,9 @@ class AuthenticationScreen(QMainWindow):
     def login(self):
         global user
         user = self.cb_user_select.currentText()
+        if not user:
+            QMessageBox.warning(self, "Ошибка выбора", "Пожалуйста, выберите пользователя.")
+            return
         self.parent.ticket_pb_home()
 
 # Widget with test question
@@ -410,12 +412,13 @@ class TestScreen(QMainWindow):
             else:
                 incorrect_answers += 1
         # print(f"Правильных ответов: {correct_answers}\nНеправильных ответов: {incorrect_answers}\nИтого: {100*correct_answers/total_answers}%.")
-
+        score = round(100*correct_answers/total_answers)
         with open(PATH_PROFILES, "r") as file:
             profiles = json.load(file)
         for i in range(len(profiles)):
             if profiles[i]["User"] == user:
-                profiles[i]["Tickets"][self.ticket_index] = round(100*correct_answers/total_answers)
+                if profiles[i]["Tickets"][self.ticket_index] < score:
+                    profiles[i]["Tickets"][self.ticket_index] = score
                 break
         with open(PATH_PROFILES, "w") as file:
             json.dump(profiles, file, indent=2)
