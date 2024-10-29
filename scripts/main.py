@@ -514,8 +514,10 @@ class TicketScreen(QMainWindow):
 
 # Screen with tickets list
 class TicketsListScreen(QMainWindow):
-    def __init__(self):
+    def __init__(self, parent):
         super().__init__()
+
+        self.parent = parent
 
         # Background
         self.w_background = QWidget()
@@ -526,6 +528,8 @@ class TicketsListScreen(QMainWindow):
         self.hb_header = QHBoxLayout()
         self.pb_profile = QPushButton()
         self.pb_home = QPushButton("Home")
+
+        self.pb_profile.clicked.connect(self.go_home)
 
         # Body
         self.sa_body = QScrollArea(self)
@@ -605,6 +609,10 @@ class TicketsListScreen(QMainWindow):
             self.setStyleSheet(f.read())
 
         self.setCentralWidget(self.w_background)
+
+    def go_home(self):
+        self.parent.s_profile.update()
+        self.parent.setCurrentWidget(self.parent.s_profile)
 
 # Screen with interesting facts
 class HomeScreen(QMainWindow):
@@ -721,7 +729,7 @@ class MainWidget(QStackedWidget):
         self.s_authorisation = AuthenticationScreen(self)
         self.s_home = HomeScreen()
         self.s_profile = ProfileScreen()
-        self.s_tickets_list = TicketsListScreen()
+        self.s_tickets_list = TicketsListScreen(self)
         self.s_ticket = TicketScreen()
         self.s_test = TestScreen(self)
 
