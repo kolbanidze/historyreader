@@ -1,0 +1,17 @@
+.Background {
+  background-color: darkGray;
+}
+.Header {
+  font-family: "Lumberjack";
+  font-size: 40px;
+  padding-bottom: 20px;
+  padding-top: 20px;
+}
+.Profile {
+  border-radius: 10px;
+  border: 3px solid gray;
+  font-size: 20px
+}
+.Profile:hover {
+  background-color: white;
+}

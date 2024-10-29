@@ -11,6 +11,7 @@ PATH_ICON_MAIN_PROFILE = "data\\icons\\main_profile.png"
 PATH_JSON_HOME = "data\\json\\home.json"
 PATH_JSON_TICKET = "data\\json\\ticket.json"
 PATH_JSON_TICKETS = "data\\json\\bilety.json"
+PATH_STYLESHEET_AUTHORISATION = "scripts\\style\\authorisation.css"
 PATH_STYLESHEET_HOME = "scripts\\style\\home.css"
 PATH_STYLESHEET_TEST = "scripts\\style\\test.css"
 PATH_STYLESHEET_TICKET = "scripts\\style\\ticket.css"
@@ -151,6 +152,57 @@ class TicketDetailWindow(QDialog):
         with open("stats.json", "w", encoding="utf-8") as f:
             json.dump(stats_data, f, ensure_ascii=False, indent=4)
 
+# Authorisation screen
+class AuthorisationScreen(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        # Background
+        self.w_background = QWidget()
+        self.vb_background = QVBoxLayout()
+
+        # Header
+        self.l_header = QLabel()
+
+        # Body
+        self.w_body = QWidget()
+        self.vb_body = QVBoxLayout()
+        self.pb_profiles = list()
+
+        # Background layout
+        self.vb_background.addWidget(self.l_header, stretch=1, alignment=Qt.AlignCenter)
+        self.vb_background.addWidget(self.w_body, stretch=9, alignment=Qt.AlignCenter)
+        self.w_background.setLayout(self.vb_background)
+
+        # Background properties
+        self.w_background.setProperty("class", "Background")
+        self.vb_background.setContentsMargins(0, 0, 0, 0)
+        self.vb_background.setSpacing(0)
+
+        # Header properties
+        self.l_header.setProperty("class", "Header")
+        self.l_header.setText("Виртуальный билетник")
+
+        # Body layout
+        self.w_body.setLayout(self.vb_body)
+
+        # Body properties
+        for i in range(3):
+            pb_profile = QPushButton()
+            self.pb_profiles.append(pb_profile)
+
+            pb_profile.setProperty("class", "Profile")
+            pb_profile.setText(f"{i + 1} Profile")
+
+        for pb in self.pb_profiles:
+            self.vb_body.addWidget(pb)
+
+            # Stylesheet
+            with open(PATH_STYLESHEET_AUTHORISATION, "r") as f:
+                self.setStyleSheet(f.read())
+
+        self.setCentralWidget(self.w_background)
+
 # Widget with test question
 class QuestionWidget(QWidget):
     def __init__(self):
@@ -228,6 +280,7 @@ class TestScreen(QMainWindow):
         self.pb_back.setProperty("class", "HeaderButton")
         self.pb_home.setProperty("class", "HeaderButton")
         self.l_ticket_title.setProperty("class", "TicketTitle")
+        self.l_ticket_title.setText("1 Тест")
 
         # Body layout
         for i in range(8):
@@ -536,12 +589,15 @@ class MainWidget(QStackedWidget):
         QFontDatabase.addApplicationFont(PATH_FONT_LUMBERJACK)
 
         # Screens
+        self.s_authorisation = AuthorisationScreen()
         self.s_home = HomeScreen()
         self.s_tickets_list = TicketsListScreen()
         self.s_ticket = TicketScreen()
         self.s_test = TestScreen()
 
         # Screens properties
+        for pb in self.s_authorisation.pb_profiles:
+            pb.clicked.connect(self.authorisation_profile)
         self.s_home.pb_tickets_list.clicked.connect(self.home_pb_tickets_list_clicked)
         self.s_tickets_list.pb_home.clicked.connect(self.tickets_list_pb_home)
         self.s_tickets_list.w_tickets[0].mousePressEvent = lambda event : self.tickets_list_w_ticket(0)
@@ -577,11 +633,16 @@ class MainWidget(QStackedWidget):
         # Properties
         self.setWindowTitle(self.s_home.strings["window_title"])
         self.resize(1200, 700)
+        self.addWidget(self.s_authorisation)
         self.addWidget(self.s_home)
         self.addWidget(self.s_tickets_list)
         self.addWidget(self.s_ticket)
         self.addWidget(self.s_test)
 
+        self.setCurrentWidget(self.s_authorisation)
+
+    # Select profile
+    def authorisation_profile(self):
         self.setCurrentWidget(self.s_home)
 
     # Move to tickets list screen
