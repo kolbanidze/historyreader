@@ -22,7 +22,7 @@ PATH_PROFILES = "data\\json\\profiles.json"
 
 user = None
 
-# TODO: добавить сохранение тестов, реализовать функцинал просмотра информации профиля
+# TODO: добавить сохранение тестов
 # TODO: переделать сообщение о прохождении теста
 
 class StatisticsDialog(QDialog):
@@ -53,7 +53,6 @@ class StatisticsDialog(QDialog):
         self.setLayout(layout)
 
 
-# Screen with profile details
 class ProfileScreen(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -93,7 +92,7 @@ class ProfileScreen(QMainWindow):
 
         # Header properties
         self.pb_back.setProperty("class", "HeaderButton")
-        self.l_profile_name.setText("1 Профиль")
+        self.l_profile_name.setText("Профиль")
         self.l_profile_name.setProperty("class", "ProfileName")
         self.l_profile_score.setText("0 баллов")
         self.l_profile_score.setProperty("class", "ProfileScore")
@@ -119,7 +118,7 @@ class ProfileScreen(QMainWindow):
 
             # Test properties
             w_test.setProperty("class", "Test")
-            self.w_tests.append(w_test)
+            self.w_tests.append((l_test_number, l_test_score))
 
             # Grid layout
             r = i // 4
@@ -137,6 +136,38 @@ class ProfileScreen(QMainWindow):
             self.setStyleSheet(f.read())
 
         self.setCentralWidget(self.w_background)
+
+    def update(self):
+        """Функция для обновления данных профиля"""
+        try:
+            # Загрузка данных профилей из JSON файла
+            with open(PATH_PROFILES, "r") as f:
+                profiles = json.load(f)
+
+            # Поиск профиля текущего пользователя
+            profile_data = next((profile for profile in profiles if profile["User"] == user), None)
+
+            if profile_data is None:
+                print("Профиль пользователя не найден.")
+                return
+
+            # Обновление имени пользователя и количества баллов
+            self.l_profile_name.setText(profile_data["User"])
+            self.l_profile_score.setText(f"{sum(profile_data['Tickets'])} баллов")
+
+            # Обновление информации о каждом тесте
+            for i, (l_test_number, l_test_score) in enumerate(self.w_tests):
+                if i < len(profile_data["Tickets"]):
+                    # Установка прогресса теста
+                    l_test_score.setText(f"{profile_data['Tickets'][i]}%")
+                else:
+                    # Если тестов в профиле меньше 25, остальные тесты скрываем
+                    l_test_score.setText("N/A")
+
+        except FileNotFoundError:
+            print(f"Файл {PATH_PROFILES} не найден.")
+        except json.JSONDecodeError:
+            print("Ошибка чтения данных из JSON.")
 
 # Screen with profiles list
 class AuthenticationScreen(QMainWindow):
@@ -224,7 +255,7 @@ class AuthenticationScreen(QMainWindow):
             QMessageBox.warning(self, "Ошибка", "Имя пользователя не может быть пустым.")
             return
 
-        new_profile = {"User": username, "Tickets": [0] * 26}  # Example structure
+        new_profile = {"User": username, "Tickets": [0] * 25}  # Example structure
         profiles = []
 
         # Load existing profiles
@@ -237,7 +268,7 @@ class AuthenticationScreen(QMainWindow):
 
         # Save to file
         with open(PATH_PROFILES, "w") as f:
-            json.dump(profiles, f, indent=4)
+            json.dump(profiles, f, indent=2)
 
         # Update ComboBox and close dialog
         self.cb_user_select.addItem(username)
@@ -379,7 +410,19 @@ class TestScreen(QMainWindow):
             else:
                 incorrect_answers += 1
         # print(f"Правильных ответов: {correct_answers}\nНеправильных ответов: {incorrect_answers}\nИтого: {100*correct_answers/total_answers}%.")
+
+        with open(PATH_PROFILES, "r") as file:
+            profiles = json.load(file)
+        for i in range(len(profiles)):
+            if profiles[i]["User"] == user:
+                profiles[i]["Tickets"][self.ticket_index] = round(100*correct_answers/total_answers)
+                break
+        with open(PATH_PROFILES, "w") as file:
+            json.dump(profiles, file, indent=2)
+
+
         StatisticsDialog(correct_answers, incorrect_answers, self).exec_()
+
 
 # Screen with ticket content
 class TicketScreen(QMainWindow):
@@ -709,6 +752,7 @@ class MainWidget(QStackedWidget):
 
     # Move to profile screen
     def home_pb_profile(self):
+        self.s_profile.update()
         self.setCurrentWidget(self.s_profile)
 
     # Move to home screen
