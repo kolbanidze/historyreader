@@ -3,7 +3,6 @@ from PyQt5.QtGui import QColor, QFontDatabase, QIcon, QPainter, QPixmap, QBrush
 from PyQt5.QtWidgets import *
 import json
 from datetime import datetime
-import os
 
 PATH_FONT_EVOLVENTA = "data\\fonts\\Evolventa.otf"
 PATH_FONT_LUMBERJACK = "data\\fonts\\Lumberjack.otf"
@@ -13,6 +12,7 @@ PATH_JSON_HOME = "data\\json\\home.json"
 PATH_JSON_TICKET = "data\\json\\ticket.json"
 PATH_JSON_TICKETS = "data\\json\\bilety.json"
 PATH_STYLESHEET_HOME = "scripts\\style\\home.css"
+PATH_STYLESHEET_TEST = "scripts\\style\\test.css"
 PATH_STYLESHEET_TICKET = "scripts\\style\\ticket.css"
 PATH_STYLESHEET_TICKETS_LIST = "scripts\\style\\tickets_list.css"
 PATH_TICKET_IMAGE = "data\\images\\ticket_{}.png"
@@ -151,6 +151,106 @@ class TicketDetailWindow(QDialog):
         with open("stats.json", "w", encoding="utf-8") as f:
             json.dump(stats_data, f, ensure_ascii=False, indent=4)
 
+# Widget with test question
+class QuestionWidget(QWidget):
+    def __init__(self):
+        super().__init__()
+
+        # Body
+        self.vb_body = QVBoxLayout()
+        self.l_label = QLabel()
+        self.rb_options = list()
+
+        # Body layout
+        self.vb_body.addWidget(self.l_label)
+        for i in range(4):
+            rb_option = QRadioButton()
+            self.rb_options.append(rb_option)
+
+            rb_option.setText("Option")
+            self.vb_body.addWidget(rb_option)
+        self.setLayout(self.vb_body)
+
+        self.l_label.setText("Question")
+
+# Screen with test
+class TestScreen(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        self.ticket_index = None
+
+        # JSON
+        self.tickets = list()
+        with open(PATH_JSON_TICKETS, "r", encoding="utf-8") as f:
+            self.tickets = json.loads(f.read())
+
+        # Background
+        self.w_background = QWidget()
+        self.vb_background = QVBoxLayout()
+
+        # Header
+        self.w_header = QWidget()
+        self.w_header_top = QWidget()
+        self.vb_header = QVBoxLayout()
+        self.hb_header_top = QHBoxLayout()
+        self.pb_back = QPushButton("Back")
+        self.pb_home = QPushButton("Home")
+        self.l_ticket_title = QLabel()
+
+        # Body
+        self.sa_body = QScrollArea()
+        self.w_body = QWidget()
+        self.vb_body = QVBoxLayout()
+        self.w_questions = list()
+
+        # Background layout
+        self.vb_background.addWidget(self.w_header)
+        self.vb_background.addWidget(self.sa_body)
+        self.w_background.setLayout(self.vb_background)
+
+        # Background properties
+        self.w_background.setProperty("class", "Background")
+        self.vb_background.setContentsMargins(0, 0, 0, 0)
+        self.vb_background.setSpacing(0)
+
+        # Header layout
+        self.vb_header.addWidget(self.w_header_top)
+        self.vb_header.addWidget(self.l_ticket_title, alignment=Qt.AlignCenter)
+        self.w_header.setLayout(self.vb_header)
+        self.hb_header_top.addWidget(self.pb_back, alignment=Qt.AlignLeft)
+        self.hb_header_top.addWidget(self.pb_home, alignment=Qt.AlignRight)
+        self.w_header_top.setLayout(self.hb_header_top)
+
+        # Header properties
+        self.vb_header.setContentsMargins(0, 0, 0, 0)
+        self.vb_header.setSpacing(0)
+        self.pb_back.setProperty("class", "HeaderButton")
+        self.pb_home.setProperty("class", "HeaderButton")
+        self.l_ticket_title.setProperty("class", "TicketTitle")
+
+        # Body layout
+        for i in range(8):
+            w_question = QuestionWidget()
+            self.w_questions.append(w_question)
+
+            self.vb_body.addWidget(w_question)
+        self.w_body.setLayout(self.vb_body)
+
+        # Body properties
+        self.sa_body.setProperty("class", "saBody")
+        self.sa_body.setWidgetResizable(True)
+        self.sa_body.setWidget(self.w_body)
+
+        # Stylesheet
+        with open(PATH_STYLESHEET_TEST, "r") as f:
+            self.setStyleSheet(f.read())
+
+        self.setCentralWidget(self.w_background)
+
+    def refresh(self):
+        ticket = self.tickets[self.ticket_index]
+
 # Screen with ticket content
 class TicketScreen(QMainWindow):
     def __init__(self):
@@ -225,8 +325,8 @@ class TicketScreen(QMainWindow):
 
         self.setCentralWidget(self.w_background)
 
-    def refresh(self, ticket_index: int):
-        ticket = self.tickets[ticket_index]
+    def refresh(self):
+        ticket = self.tickets[self.ticket_index]
         self.l_ticket_title.setText(self.strings["ticket_title"].format(ticket.get("Number")))
         self.l_ticket_content.setText(ticket.get("Text"))
 
@@ -439,37 +539,40 @@ class MainWidget(QStackedWidget):
         self.s_home = HomeScreen()
         self.s_tickets_list = TicketsListScreen()
         self.s_ticket = TicketScreen()
+        self.s_test = TestScreen()
 
         # Screens properties
         self.s_home.pb_tickets_list.clicked.connect(self.home_pb_tickets_list_clicked)
         self.s_tickets_list.pb_home.clicked.connect(self.tickets_list_pb_home)
         self.s_tickets_list.w_tickets[0].mousePressEvent = lambda event : self.tickets_list_w_ticket(0)
-        self.s_tickets_list.w_tickets[1].mousePressEvent = lambda event: self.tickets_list_w_ticket(1)
-        self.s_tickets_list.w_tickets[2].mousePressEvent = lambda event: self.tickets_list_w_ticket(2)
-        self.s_tickets_list.w_tickets[3].mousePressEvent = lambda event: self.tickets_list_w_ticket(3)
-        self.s_tickets_list.w_tickets[4].mousePressEvent = lambda event: self.tickets_list_w_ticket(4)
-        self.s_tickets_list.w_tickets[5].mousePressEvent = lambda event: self.tickets_list_w_ticket(5)
-        self.s_tickets_list.w_tickets[6].mousePressEvent = lambda event: self.tickets_list_w_ticket(6)
-        self.s_tickets_list.w_tickets[7].mousePressEvent = lambda event: self.tickets_list_w_ticket(7)
-        self.s_tickets_list.w_tickets[8].mousePressEvent = lambda event: self.tickets_list_w_ticket(8)
-        self.s_tickets_list.w_tickets[9].mousePressEvent = lambda event: self.tickets_list_w_ticket(9)
-        self.s_tickets_list.w_tickets[10].mousePressEvent = lambda event: self.tickets_list_w_ticket(10)
-        self.s_tickets_list.w_tickets[11].mousePressEvent = lambda event: self.tickets_list_w_ticket(11)
-        self.s_tickets_list.w_tickets[12].mousePressEvent = lambda event: self.tickets_list_w_ticket(12)
-        self.s_tickets_list.w_tickets[13].mousePressEvent = lambda event: self.tickets_list_w_ticket(13)
-        self.s_tickets_list.w_tickets[14].mousePressEvent = lambda event: self.tickets_list_w_ticket(14)
-        self.s_tickets_list.w_tickets[15].mousePressEvent = lambda event: self.tickets_list_w_ticket(15)
-        self.s_tickets_list.w_tickets[16].mousePressEvent = lambda event: self.tickets_list_w_ticket(16)
-        self.s_tickets_list.w_tickets[17].mousePressEvent = lambda event: self.tickets_list_w_ticket(17)
-        self.s_tickets_list.w_tickets[18].mousePressEvent = lambda event: self.tickets_list_w_ticket(18)
-        self.s_tickets_list.w_tickets[19].mousePressEvent = lambda event: self.tickets_list_w_ticket(19)
-        self.s_tickets_list.w_tickets[20].mousePressEvent = lambda event: self.tickets_list_w_ticket(20)
-        self.s_tickets_list.w_tickets[21].mousePressEvent = lambda event: self.tickets_list_w_ticket(21)
-        self.s_tickets_list.w_tickets[22].mousePressEvent = lambda event: self.tickets_list_w_ticket(22)
-        self.s_tickets_list.w_tickets[23].mousePressEvent = lambda event: self.tickets_list_w_ticket(23)
-        self.s_tickets_list.w_tickets[24].mousePressEvent = lambda event: self.tickets_list_w_ticket(24)
+        self.s_tickets_list.w_tickets[1].mousePressEvent = lambda event : self.tickets_list_w_ticket(1)
+        self.s_tickets_list.w_tickets[2].mousePressEvent = lambda event : self.tickets_list_w_ticket(2)
+        self.s_tickets_list.w_tickets[3].mousePressEvent = lambda event : self.tickets_list_w_ticket(3)
+        self.s_tickets_list.w_tickets[4].mousePressEvent = lambda event : self.tickets_list_w_ticket(4)
+        self.s_tickets_list.w_tickets[5].mousePressEvent = lambda event : self.tickets_list_w_ticket(5)
+        self.s_tickets_list.w_tickets[6].mousePressEvent = lambda event : self.tickets_list_w_ticket(6)
+        self.s_tickets_list.w_tickets[7].mousePressEvent = lambda event : self.tickets_list_w_ticket(7)
+        self.s_tickets_list.w_tickets[8].mousePressEvent = lambda event : self.tickets_list_w_ticket(8)
+        self.s_tickets_list.w_tickets[9].mousePressEvent = lambda event : self.tickets_list_w_ticket(9)
+        self.s_tickets_list.w_tickets[10].mousePressEvent = lambda event : self.tickets_list_w_ticket(10)
+        self.s_tickets_list.w_tickets[11].mousePressEvent = lambda event : self.tickets_list_w_ticket(11)
+        self.s_tickets_list.w_tickets[12].mousePressEvent = lambda event : self.tickets_list_w_ticket(12)
+        self.s_tickets_list.w_tickets[13].mousePressEvent = lambda event : self.tickets_list_w_ticket(13)
+        self.s_tickets_list.w_tickets[14].mousePressEvent = lambda event : self.tickets_list_w_ticket(14)
+        self.s_tickets_list.w_tickets[15].mousePressEvent = lambda event : self.tickets_list_w_ticket(15)
+        self.s_tickets_list.w_tickets[16].mousePressEvent = lambda event : self.tickets_list_w_ticket(16)
+        self.s_tickets_list.w_tickets[17].mousePressEvent = lambda event : self.tickets_list_w_ticket(17)
+        self.s_tickets_list.w_tickets[18].mousePressEvent = lambda event : self.tickets_list_w_ticket(18)
+        self.s_tickets_list.w_tickets[19].mousePressEvent = lambda event : self.tickets_list_w_ticket(19)
+        self.s_tickets_list.w_tickets[20].mousePressEvent = lambda event : self.tickets_list_w_ticket(20)
+        self.s_tickets_list.w_tickets[21].mousePressEvent = lambda event : self.tickets_list_w_ticket(21)
+        self.s_tickets_list.w_tickets[22].mousePressEvent = lambda event : self.tickets_list_w_ticket(22)
+        self.s_tickets_list.w_tickets[23].mousePressEvent = lambda event : self.tickets_list_w_ticket(23)
+        self.s_tickets_list.w_tickets[24].mousePressEvent = lambda event : self.tickets_list_w_ticket(24)
         self.s_ticket.pb_back.clicked.connect(self.ticket_pb_back)
         self.s_ticket.pb_home.clicked.connect(self.ticket_pb_home)
+        self.s_ticket.pb_test.clicked.connect(self.ticket_pb_test)
+        self.s_test.pb_back.clicked.connect(self.test_pb_back)
 
         # Properties
         self.setWindowTitle(self.s_home.strings["window_title"])
@@ -477,6 +580,7 @@ class MainWidget(QStackedWidget):
         self.addWidget(self.s_home)
         self.addWidget(self.s_tickets_list)
         self.addWidget(self.s_ticket)
+        self.addWidget(self.s_test)
 
         self.setCurrentWidget(self.s_home)
 
@@ -492,14 +596,23 @@ class MainWidget(QStackedWidget):
     def ticket_pb_home(self):
         self.setCurrentWidget(self.s_home)
 
+    # Move to test screen
+    def ticket_pb_test(self):
+        self.setCurrentWidget(self.s_test)
+
     # Move to ticket screen
     def tickets_list_w_ticket(self, ticket_index: int):
-        self.s_ticket.refresh(ticket_index)
+        self.s_ticket.ticket_index = ticket_index
+        self.s_ticket.refresh()
         self.setCurrentWidget(self.s_ticket)
 
     # Move to home screen
     def tickets_list_pb_home(self):
         self.setCurrentWidget(self.s_home)
+
+    # Move to ticket screen
+    def test_pb_back(self):
+        self.setCurrentWidget(self.s_ticket)
 
 if __name__ == "__main__":
     app = QApplication([])

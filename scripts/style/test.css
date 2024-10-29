@@ -1,0 +1,35 @@
+.Background {
+  background-color: darkGray;
+}
+.HeaderButton {
+  background-color: gray;
+  border: 3px solid black;
+  border-radius: 30px;
+  height: 60px;
+  max-width: 60px;
+  min-width: 60px;
+}
+.HeaderButton:hover {
+  background-color: white;
+}
+.TicketTitle {
+  font-family: "Lumberjack";
+  font-size: 40px;
+  padding-bottom: 20px;
+  padding-top: 20px;
+}
+.saBody {
+  border: none;
+}
+.FooterButton {
+  background-color: white;
+  border-top: 3px solid gray;
+  font-family: "Lumberjack";
+  font-size: 40px;
+  height: 60px;
+  padding-bottom: 10px;
+  padding-top: 10px;
+}
+.FooterButton:hover {
+  background-color: gray;
+}
