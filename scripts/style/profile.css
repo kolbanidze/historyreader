@@ -1,0 +1,41 @@
+.Background {
+  background-color: darkGray;
+}
+.HeaderButton {
+  background-color: gray;
+  border: 3px solid black;
+  border-radius: 30px;
+  height: 60px;
+  max-width: 60px;
+  min-width: 60px;
+}
+.HeaderButton:hover {
+  background-color: white;
+}
+.ProfileName {
+  font-family: "Lumberjack";
+  font-size: 40px;
+  padding-bottom: 20px;
+  padding-top: 20px;
+}
+.ProfileScore {
+  font-family: "Lumberjack";
+  font-size: 30px;
+  padding-bottom: 20px;
+  padding-left: 40px;
+  padding-top: 20px;
+}
+.saBody {
+  border: none;
+}
+.Test {
+  background-color: darkGray;
+  border: 3px solid gray;
+  border-radius: 40px;
+}
+.TestNumber {
+  font-size: 60px;
+}
+.TestScore {
+  font-size: 40px;
+}

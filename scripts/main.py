@@ -13,6 +13,7 @@ PATH_JSON_TICKET = "data\\json\\ticket.json"
 PATH_JSON_TICKETS = "data\\json\\bilety.json"
 PATH_STYLESHEET_AUTHORISATION = "scripts\\style\\authorisation.css"
 PATH_STYLESHEET_HOME = "scripts\\style\\home.css"
+PATH_STYLESHEET_PROFILE = "scripts\\style\\profile.css"
 PATH_STYLESHEET_TEST = "scripts\\style\\test.css"
 PATH_STYLESHEET_TICKET = "scripts\\style\\ticket.css"
 PATH_STYLESHEET_TICKETS_LIST = "scripts\\style\\tickets_list.css"
@@ -152,7 +153,92 @@ class TicketDetailWindow(QDialog):
         with open("stats.json", "w", encoding="utf-8") as f:
             json.dump(stats_data, f, ensure_ascii=False, indent=4)
 
-# Authorisation screen
+# Screen with profile details
+class ProfileScreen(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        # Background
+        self.w_background = QWidget()
+        self.vb_background = QVBoxLayout()
+
+        # Header
+        self.w_header = QWidget()
+        self.vb_header = QVBoxLayout()
+        self.pb_back = QPushButton("Back")
+        self.l_profile_name = QLabel()
+        self.l_profile_score = QLabel()
+
+        # Body
+        self.sa_body = QScrollArea()
+        self.w_body = QWidget()
+        self.g_body = QGridLayout()
+        self.w_tests = list()
+
+        # Background layout
+        self.vb_background.addWidget(self.w_header, stretch=1)
+        self.vb_background.addWidget(self.sa_body, stretch=9)
+        self.w_background.setLayout(self.vb_background)
+
+        # Background properties
+        self.w_background.setProperty("class", "Background")
+        self.vb_background.setContentsMargins(0, 0, 0, 0)
+        self.vb_background.setSpacing(0)
+
+        # Header layout
+        self.vb_header.addWidget(self.pb_back, alignment=Qt.AlignLeft)
+        self.vb_header.addWidget(self.l_profile_name, alignment=Qt.AlignCenter)
+        self.vb_header.addWidget(self.l_profile_score, alignment=Qt.AlignLeft)
+        self.w_header.setLayout(self.vb_header)
+
+        # Header properties
+        self.pb_back.setProperty("class", "HeaderButton")
+        self.l_profile_name.setText("1 Профиль")
+        self.l_profile_name.setProperty("class", "ProfileName")
+        self.l_profile_score.setText("0 баллов")
+        self.l_profile_score.setProperty("class", "ProfileScore")
+
+        # Body layout
+        self.w_body.setLayout(self.g_body)
+
+        # Body properties
+        self.sa_body.setProperty("class", "saBody")
+        self.sa_body.setWidgetResizable(True)
+        self.sa_body.setWidget(self.w_body)
+        for i in range(25):
+            # Test
+            w_test = QWidget()
+            hb_test = QHBoxLayout()
+            l_test_number = QLabel()
+            l_test_score = QLabel()
+
+            # Test layout
+            hb_test.addWidget(l_test_number, alignment=Qt.AlignCenter)
+            hb_test.addWidget(l_test_score, alignment=Qt.AlignCenter)
+            w_test.setLayout(hb_test)
+
+            # Test properties
+            w_test.setProperty("class", "Test")
+            self.w_tests.append(w_test)
+
+            # Grid layout
+            r = i // 4
+            c = i % 4
+            self.g_body.addWidget(w_test, r, c)
+
+            # Test properties
+            l_test_number.setText(str(i + 1))
+            l_test_number.setProperty("class", "TestNumber")
+            l_test_score.setText("0%")
+            l_test_score.setProperty("class", "TestScore")
+
+        # Stylesheet
+        with open(PATH_STYLESHEET_PROFILE, "r") as f:
+            self.setStyleSheet(f.read())
+
+        self.setCentralWidget(self.w_background)
+
+# Screen with profiles list
 class AuthorisationScreen(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -192,7 +278,7 @@ class AuthorisationScreen(QMainWindow):
             self.pb_profiles.append(pb_profile)
 
             pb_profile.setProperty("class", "Profile")
-            pb_profile.setText(f"{i + 1} Profile")
+            pb_profile.setText(f"{i + 1} Профиль")
 
         for pb in self.pb_profiles:
             self.vb_body.addWidget(pb)
@@ -591,6 +677,7 @@ class MainWidget(QStackedWidget):
         # Screens
         self.s_authorisation = AuthorisationScreen()
         self.s_home = HomeScreen()
+        self.s_profile = ProfileScreen()
         self.s_tickets_list = TicketsListScreen()
         self.s_ticket = TicketScreen()
         self.s_test = TestScreen()
@@ -598,7 +685,9 @@ class MainWidget(QStackedWidget):
         # Screens properties
         for pb in self.s_authorisation.pb_profiles:
             pb.clicked.connect(self.authorisation_profile)
-        self.s_home.pb_tickets_list.clicked.connect(self.home_pb_tickets_list_clicked)
+        self.s_home.pb_tickets_list.clicked.connect(self.home_pb_tickets_list)
+        self.s_home.pb_profile.clicked.connect(self.home_pb_profile)
+        self.s_profile.pb_back.clicked.connect(self.profile_pb_back)
         self.s_tickets_list.pb_home.clicked.connect(self.tickets_list_pb_home)
         self.s_tickets_list.w_tickets[0].mousePressEvent = lambda event : self.tickets_list_w_ticket(0)
         self.s_tickets_list.w_tickets[1].mousePressEvent = lambda event : self.tickets_list_w_ticket(1)
@@ -635,6 +724,7 @@ class MainWidget(QStackedWidget):
         self.resize(1200, 700)
         self.addWidget(self.s_authorisation)
         self.addWidget(self.s_home)
+        self.addWidget(self.s_profile)
         self.addWidget(self.s_tickets_list)
         self.addWidget(self.s_ticket)
         self.addWidget(self.s_test)
@@ -646,8 +736,16 @@ class MainWidget(QStackedWidget):
         self.setCurrentWidget(self.s_home)
 
     # Move to tickets list screen
-    def home_pb_tickets_list_clicked(self):
+    def home_pb_tickets_list(self):
         self.setCurrentWidget(self.s_tickets_list)
+
+    # Move to profile screen
+    def home_pb_profile(self):
+        self.setCurrentWidget(self.s_profile)
+
+    # Move to home screen
+    def profile_pb_back(self):
+        self.setCurrentWidget(self.s_home)
 
     # Move to ticket list screen
     def ticket_pb_back(self):
