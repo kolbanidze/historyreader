@@ -22,8 +22,6 @@ PATH_PROFILES = "data\\json\\profiles.json"
 
 user = None
 
-# TODO: переделать сообщение о прохождении теста
-
 class StatisticsDialog(QDialog):
     def __init__(self, correct_count, incorrect_count, parent=None):
         super().__init__(parent)
@@ -311,8 +309,9 @@ class QuestionWidget(QWidget):
 
 # Screen with test
 class TestScreen(QMainWindow):
-    def __init__(self):
+    def __init__(self, parent):
         super().__init__()
+        self.parent = parent
 
         self.ticket_index = None
         self.ticket = None
@@ -334,6 +333,9 @@ class TestScreen(QMainWindow):
         self.pb_back = QPushButton("Back")
         self.pb_home = QPushButton("Home")
         self.l_ticket_title = QLabel()
+
+        self.pb_back.clicked.connect(self.go_back)
+        self.pb_home.clicked.connect(self.go_home)
 
         # Body
         self.sa_body = QScrollArea(self)
@@ -422,9 +424,14 @@ class TestScreen(QMainWindow):
                 break
         with open(PATH_PROFILES, "w") as file:
             json.dump(profiles, file, indent=2)
-
+        self.go_back()
         StatisticsDialog(correct_answers, incorrect_answers, self).exec_()
 
+    def go_back(self):
+        self.parent.setCurrentWidget(self.parent.s_tickets_list)
+
+    def go_home(self):
+        self.parent.setCurrentWidget(self.parent.s_home)
 
 # Screen with ticket content
 class TicketScreen(QMainWindow):
@@ -716,7 +723,7 @@ class MainWidget(QStackedWidget):
         self.s_profile = ProfileScreen()
         self.s_tickets_list = TicketsListScreen()
         self.s_ticket = TicketScreen()
-        self.s_test = TestScreen()
+        self.s_test = TestScreen(self)
 
         # Screens properties
         self.s_home.pb_tickets_list.clicked.connect(self.home_pb_tickets_list)
