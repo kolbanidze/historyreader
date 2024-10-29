@@ -2,7 +2,7 @@ from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QColor, QFontDatabase, QIcon, QPainter, QPixmap, QBrush
 from PyQt5.QtWidgets import *
 import json
-from datetime import datetime
+import os
 
 PATH_FONT_EVOLVENTA = "data\\fonts\\Evolventa.otf"
 PATH_FONT_LUMBERJACK = "data\\fonts\\Lumberjack.otf"
@@ -18,6 +18,12 @@ PATH_STYLESHEET_TEST = "scripts\\style\\test.css"
 PATH_STYLESHEET_TICKET = "scripts\\style\\ticket.css"
 PATH_STYLESHEET_TICKETS_LIST = "scripts\\style\\tickets_list.css"
 PATH_TICKET_IMAGE = "data\\images\\ticket_{}.png"
+PATH_PROFILES = "data\\json\\profiles.json"
+
+user = None
+
+# TODO: добавить сохранение тестов, реализовать функцинал просмотра информации профиля
+# TODO: переделать сообщение о прохождении теста
 
 class StatisticsDialog(QDialog):
     def __init__(self, correct_count, incorrect_count, parent=None):
@@ -64,7 +70,7 @@ class ProfileScreen(QMainWindow):
         self.l_profile_score = QLabel()
 
         # Body
-        self.sa_body = QScrollArea()
+        self.sa_body = QScrollArea(self)
         self.w_body = QWidget()
         self.g_body = QGridLayout()
         self.w_tests = list()
@@ -133,55 +139,115 @@ class ProfileScreen(QMainWindow):
         self.setCentralWidget(self.w_background)
 
 # Screen with profiles list
-class AuthorisationScreen(QMainWindow):
-    def __init__(self):
+class AuthenticationScreen(QMainWindow):
+    def __init__(self, parent):
         super().__init__()
-
+        self.parent = parent
         # Background
         self.w_background = QWidget()
         self.vb_background = QVBoxLayout()
 
         # Header
-        self.l_header = QLabel()
+        self.l_header = QLabel("Виртуальный билетник")
+        self.l_header.setAlignment(Qt.AlignCenter)
+        self.l_header.setProperty("class", "Header")
 
-        # Body
+        # Body Layout
         self.w_body = QWidget()
-        self.vb_body = QVBoxLayout()
-        self.pb_profiles = list()
+        self.grid_body = QGridLayout()
 
-        # Background layout
-        self.vb_background.addWidget(self.l_header, stretch=1, alignment=Qt.AlignCenter)
-        self.vb_background.addWidget(self.w_body, stretch=9, alignment=Qt.AlignCenter)
+        # User selection dropdown (similar to CTkOptionMenu)
+        self.cb_user_select = QComboBox()
+        self.load_profiles()  # Загружаем профили из файла
+        self.cb_user_select.setProperty("class", "UserSelect")
+
+        # Buttons
+        self.btn_create_user = QPushButton("Создать пользователя")
+        self.btn_create_user.clicked.connect(self.show_create_user_dialog)  # Подключаем к функции создания
+        self.btn_login = QPushButton("Войти")
+        self.btn_login.clicked.connect(self.login)
+
+        # Adding widgets to the grid layout
+        self.grid_body.addWidget(self.cb_user_select, 0, 0, 1, 1)
+        self.grid_body.addWidget(self.btn_create_user, 0, 1, 1, 1)
+        self.grid_body.addWidget(self.btn_login, 1, 0, 1, 2)
+
+        # Apply layout to the body widget
+        self.w_body.setLayout(self.grid_body)
+
+        # Background layout setup
+        self.vb_background.addWidget(self.l_header, stretch=1)
+        self.vb_background.addWidget(self.w_body, stretch=9)
         self.w_background.setLayout(self.vb_background)
 
-        # Background properties
-        self.w_background.setProperty("class", "Background")
-        self.vb_background.setContentsMargins(0, 0, 0, 0)
-        self.vb_background.setSpacing(0)
+        # Stylesheet
+        with open(PATH_STYLESHEET_AUTHORISATION, "r") as f:
+            self.setStyleSheet(f.read())
 
-        # Header properties
-        self.l_header.setProperty("class", "Header")
-        self.l_header.setText("Виртуальный билетник")
-
-        # Body layout
-        self.w_body.setLayout(self.vb_body)
-
-        # Body properties
-        for i in range(3):
-            pb_profile = QPushButton()
-            self.pb_profiles.append(pb_profile)
-
-            pb_profile.setProperty("class", "Profile")
-            pb_profile.setText(f"{i + 1} Профиль")
-
-        for pb in self.pb_profiles:
-            self.vb_body.addWidget(pb)
-
-            # Stylesheet
-            with open(PATH_STYLESHEET_AUTHORISATION, "r") as f:
-                self.setStyleSheet(f.read())
-
+        # Set the central widget
         self.setCentralWidget(self.w_background)
+
+    def load_profiles(self):
+        """Load profiles from profiles.json and populate the ComboBox."""
+        if os.path.exists(PATH_PROFILES):
+            with open(PATH_PROFILES, "r") as f:
+                profiles = json.load(f)
+                self.cb_user_select.clear()
+                for profile in profiles:
+                    self.cb_user_select.addItem(profile["User"])
+        else:
+            with open(PATH_PROFILES, "w") as f:
+                json.dump([], f)
+
+    def show_create_user_dialog(self):
+        """Show a dialog to create a new user."""
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Создать пользователя")
+
+        # Form layout for user input
+        form_layout = QFormLayout(dialog)
+        username_input = QLineEdit(dialog)
+        form_layout.addRow("Имя пользователя:", username_input)
+
+        # Dialog buttons
+        dialog_buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        dialog_buttons.accepted.connect(lambda: self.create_user(username_input.text(), dialog))
+        dialog_buttons.rejected.connect(dialog.reject)
+        form_layout.addWidget(dialog_buttons)
+
+        dialog.setLayout(form_layout)
+        dialog.exec_()
+
+    def create_user(self, username, dialog):
+        """Add a new user profile to profiles.json."""
+        if not username:
+            QMessageBox.warning(self, "Ошибка", "Имя пользователя не может быть пустым.")
+            return
+
+        new_profile = {"User": username, "Tickets": [0] * 26}  # Example structure
+        profiles = []
+
+        # Load existing profiles
+        if os.path.exists(PATH_PROFILES):
+            with open(PATH_PROFILES, "r") as f:
+                profiles = json.load(f)
+
+        # Add the new profile
+        profiles.append(new_profile)
+
+        # Save to file
+        with open(PATH_PROFILES, "w") as f:
+            json.dump(profiles, f, indent=4)
+
+        # Update ComboBox and close dialog
+        self.cb_user_select.addItem(username)
+        dialog.accept()
+        QMessageBox.information(self, "Успех", f"Пользователь '{username}' успешно создан.")
+
+    def login(self):
+        global user
+        user = self.cb_user_select.currentText()
+        self.parent.ticket_pb_home()
 
 # Widget with test question
 class QuestionWidget(QWidget):
@@ -216,6 +282,7 @@ class TestScreen(QMainWindow):
         super().__init__()
 
         self.ticket_index = None
+        self.ticket = None
 
         # JSON
         self.tickets = list()
@@ -236,7 +303,7 @@ class TestScreen(QMainWindow):
         self.l_ticket_title = QLabel()
 
         # Body
-        self.sa_body = QScrollArea()
+        self.sa_body = QScrollArea(self)
         self.w_body = QWidget()
         self.vb_body = QVBoxLayout()
         self.w_questions = list()
@@ -341,7 +408,7 @@ class TicketScreen(QMainWindow):
         self.l_ticket_title = QLabel()
 
         # Body
-        self.sa_body = QScrollArea()
+        self.sa_body = QScrollArea(self)
         self.l_ticket_content = QLabel()
 
         # Footer
@@ -409,7 +476,7 @@ class TicketsListScreen(QMainWindow):
         self.pb_home = QPushButton("Home")
 
         # Body
-        self.sa_body = QScrollArea()
+        self.sa_body = QScrollArea(self)
         self.w_body = QWidget()
         self.g_body = QGridLayout()
         self.w_tickets = list()
@@ -509,7 +576,7 @@ class HomeScreen(QMainWindow):
         self.le_search = QLineEdit()
 
         # Body
-        self.sa_body = QScrollArea()
+        self.sa_body = QScrollArea(self)
         self.l_body_header = QLabel(self.strings["this_is_interesting"])
         self.w_body = QWidget()
         self.vb_body = QVBoxLayout()
@@ -599,7 +666,7 @@ class MainWidget(QStackedWidget):
         QFontDatabase.addApplicationFont(PATH_FONT_LUMBERJACK)
 
         # Screens
-        self.s_authorisation = AuthorisationScreen()
+        self.s_authorisation = AuthenticationScreen(self)
         self.s_home = HomeScreen()
         self.s_profile = ProfileScreen()
         self.s_tickets_list = TicketsListScreen()
@@ -607,8 +674,6 @@ class MainWidget(QStackedWidget):
         self.s_test = TestScreen()
 
         # Screens properties
-        for pb in self.s_authorisation.pb_profiles:
-            pb.clicked.connect(self.authorisation_profile)
         self.s_home.pb_tickets_list.clicked.connect(self.home_pb_tickets_list)
         self.s_home.pb_profile.clicked.connect(self.home_pb_profile)
         self.s_profile.pb_back.clicked.connect(self.profile_pb_back)
