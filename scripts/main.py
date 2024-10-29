@@ -19,139 +19,33 @@ PATH_STYLESHEET_TICKET = "scripts\\style\\ticket.css"
 PATH_STYLESHEET_TICKETS_LIST = "scripts\\style\\tickets_list.css"
 PATH_TICKET_IMAGE = "data\\images\\ticket_{}.png"
 
-class TicketDetailWindow(QDialog):
-    def __init__(self, ticket):
-        super().__init__()
-        self.ticket = ticket
-        self.setWindowTitle(f"Билет №{ticket['Number']}")
-        self.setMinimumSize(400, 300)
+class StatisticsDialog(QDialog):
+    def __init__(self, correct_count, incorrect_count, parent=None):
+        super().__init__(parent)
 
-        # Главный макет для билета и теста
-        self.layout = QVBoxLayout()
-        self.setLayout(self.layout)
+        self.setWindowTitle("Результаты теста")
 
-        # Прокручиваемая область для текста билета
-        self.scroll_area = QScrollArea()
-        self.scroll_area.setWidgetResizable(True)
+        # Устанавливаем макет
+        layout = QVBoxLayout()
 
-        # Текст билета
-        ticket_text = QLabel(ticket['Text'])
-        ticket_text.setOpenExternalLinks(True)
-        ticket_text.setWordWrap(True)
-        self.scroll_area.setWidget(ticket_text)
+        # Создаем метки для правильных и неправильных ответов
+        self.label_correct = QLabel(f"Правильные ответы: {correct_count}")
+        self.label_incorrect = QLabel(f"Неправильные ответы: {incorrect_count}")
+        self.label_stats = QLabel(f"Итого: {round(100*correct_count/(correct_count+incorrect_count), 2)}% верных ответов.")
 
-        # Кнопка для запуска теста
-        self.start_test_button = QPushButton("Начать тест")
-        self.start_test_button.clicked.connect(self.start_test)
+        # Кнопка для закрытия окна
+        self.btn_close = QPushButton("Закрыть")
+        self.btn_close.clicked.connect(self.accept)  # Закрываем окно при нажатии на кнопку
 
-        # Добавляем прокрутку и кнопку в макет
-        self.layout.addWidget(self.scroll_area)
-        self.layout.addWidget(self.start_test_button)
+        # Добавляем элементы в макет
+        layout.addWidget(self.label_correct)
+        layout.addWidget(self.label_incorrect)
+        layout.addWidget(self.label_stats)
+        layout.addWidget(self.btn_close)
 
-    def start_test(self):
-        # Удаляем виджет с текстом билета и кнопку
-        self.scroll_area.deleteLater()
-        self.start_test_button.deleteLater()
+        # Устанавливаем макет в диалоговое окно
+        self.setLayout(layout)
 
-        # Загружаем тестовые данные
-        self.test_data = self.ticket["Test"]
-        self.current_question_index = 0
-        self.user_answers = []
-
-        # Вопрос и ответы
-        self.question_label = QLabel()
-        self.layout.addWidget(self.question_label)
-
-        self.answer_buttons = []
-        self.answers_layout = QVBoxLayout()
-        for i in range(4):
-            btn = QRadioButton()
-            self.answer_buttons.append(btn)
-            self.answers_layout.addWidget(btn)
-        self.layout.addLayout(self.answers_layout)
-
-        # Кнопки "Далее" и "Завершить тест"
-        self.next_button = QPushButton("Далее")
-        self.next_button.clicked.connect(self.next_question)
-        self.layout.addWidget(self.next_button)
-
-        self.finish_button = QPushButton("Завершить тест")
-        self.finish_button.clicked.connect(self.finish_test)
-        self.finish_button.setVisible(False)
-        self.layout.addWidget(self.finish_button)
-
-        # Показ первого вопроса
-        self.show_question(0)
-
-    def show_question(self, index):
-        """Отображает текущий вопрос и варианты ответов"""
-        question_data = self.test_data[index]
-        self.question_label.setText(question_data["Question"])
-
-        # Обновляем текст кнопок для ответов
-        for i, answer_text in enumerate(question_data["Answers"]):
-            self.answer_buttons[i].setText(answer_text)
-            self.answer_buttons[i].setVisible(True)
-            self.answer_buttons[i].setChecked(False)
-
-        # Скрываем неиспользуемые кнопки
-        for i in range(len(question_data["Answers"]), len(self.answer_buttons)):
-            self.answer_buttons[i].setVisible(False)
-
-        # Показ кнопок навигации
-        self.next_button.setVisible(index < len(self.test_data) - 1)
-        self.finish_button.setVisible(index == len(self.test_data) - 1)
-
-    def next_question(self):
-        """Сохраняет ответ и переходит к следующему вопросу"""
-        self.save_answer()
-        self.current_question_index += 1
-        if self.current_question_index < len(self.test_data):
-            self.show_question(self.current_question_index)
-
-    def save_answer(self):
-        """Сохраняет выбранный ответ пользователя для текущего вопроса"""
-        for btn in self.answer_buttons:
-            if btn.isChecked():
-                self.user_answers.append(btn.text())
-                return
-        self.user_answers.append(None)  # Если ответ не выбран
-
-    def finish_test(self):
-        """Завершает тест и показывает результаты"""
-        self.save_answer()
-        correct_answers = sum(
-            1 for user_answer, question_data in zip(self.user_answers, self.test_data)
-            if user_answer == question_data["CorrectAnswer"]
-        )
-
-        QMessageBox.information(
-            self, "Результат теста",
-            f"Вы ответили правильно на {correct_answers} из {len(self.test_data)} вопросов."
-        )
-
-        # Сохраняем результат
-        self.save_test_result(correct_answers, len(self.test_data))
-        self.accept()
-
-    def save_test_result(self, correct_answers, total_questions):
-        """Сохраняет результаты в stats.json"""
-        result = {
-            "Bilet": self.ticket["Number"],
-            "Time": datetime.now().isoformat(),
-            "CorrectAnswers": correct_answers,
-            "TotalAnswers": total_questions
-        }
-
-        try:
-            with open("stats.json", "r", encoding="utf-8") as f:
-                stats_data = json.load(f)
-        except (FileNotFoundError, json.JSONDecodeError):
-            stats_data = []
-
-        stats_data.append(result)
-        with open("stats.json", "w", encoding="utf-8") as f:
-            json.dump(stats_data, f, ensure_ascii=False, indent=4)
 
 # Screen with profile details
 class ProfileScreen(QMainWindow):
@@ -291,9 +185,9 @@ class AuthorisationScreen(QMainWindow):
 
 # Widget with test question
 class QuestionWidget(QWidget):
-    def __init__(self):
+    def __init__(self, ticket):
         super().__init__()
-
+        self.ticket = ticket
         # Body
         self.vb_body = QVBoxLayout()
         self.l_label = QLabel()
@@ -301,15 +195,20 @@ class QuestionWidget(QWidget):
 
         # Body layout
         self.vb_body.addWidget(self.l_label)
-        for i in range(4):
+        for i in ticket["Answers"]:
             rb_option = QRadioButton()
             self.rb_options.append(rb_option)
 
-            rb_option.setText("Option")
+            rb_option.setText(i)
             self.vb_body.addWidget(rb_option)
         self.setLayout(self.vb_body)
 
-        self.l_label.setText("Question")
+        self.l_label.setText(ticket["Question"])
+
+    def get_answer(self):
+        for i in self.rb_options:
+            if i.isChecked():
+                return i.text()
 
 # Screen with test
 class TestScreen(QMainWindow):
@@ -366,20 +265,15 @@ class TestScreen(QMainWindow):
         self.pb_back.setProperty("class", "HeaderButton")
         self.pb_home.setProperty("class", "HeaderButton")
         self.l_ticket_title.setProperty("class", "TicketTitle")
-        self.l_ticket_title.setText("1 Тест")
-
-        # Body layout
-        for i in range(8):
-            w_question = QuestionWidget()
-            self.w_questions.append(w_question)
-
-            self.vb_body.addWidget(w_question)
-        self.w_body.setLayout(self.vb_body)
 
         # Body properties
         self.sa_body.setProperty("class", "saBody")
         self.sa_body.setWidgetResizable(True)
         self.sa_body.setWidget(self.w_body)
+
+        # Check Button
+        self.pb_check = QPushButton("Проверить тест")  # Кнопка для проверки теста
+        self.pb_check.clicked.connect(self.check_test)  # Связываем сигнал с методом проверки
 
         # Stylesheet
         with open(PATH_STYLESHEET_TEST, "r") as f:
@@ -387,8 +281,38 @@ class TestScreen(QMainWindow):
 
         self.setCentralWidget(self.w_background)
 
-    def refresh(self):
-        ticket = self.tickets[self.ticket_index]
+    def set_ticket_index(self, ticket_index):
+        self.ticket_index = ticket_index
+        self.ticket = self.tickets[self.ticket_index]
+
+        for question in self.w_questions:
+            self.vb_body.removeWidget(question)
+            question.deleteLater()  # Удаляем виджет, чтобы освободить память
+        self.w_questions.clear()  # Очищаем список вопросов
+
+        # Body layout
+        for i in self.ticket["Test"]:
+            w_question = QuestionWidget(i)
+            self.w_questions.append(w_question)
+
+            self.vb_body.addWidget(w_question)
+        self.w_body.setLayout(self.vb_body)
+        self.vb_body.addWidget(self.pb_check)
+
+    def check_test(self):
+        correct_answers = 0
+        incorrect_answers = 0
+        total_answers = len(self.ticket["Test"])
+        answers = []
+        for i in self.w_questions:
+            answers.append(i.get_answer())
+        for i in range(total_answers):
+            if answers[i] == self.ticket["Test"][i]["CorrectAnswer"]:
+                correct_answers += 1
+            else:
+                incorrect_answers += 1
+        # print(f"Правильных ответов: {correct_answers}\nНеправильных ответов: {incorrect_answers}\nИтого: {100*correct_answers/total_answers}%.")
+        StatisticsDialog(correct_answers, incorrect_answers, self).exec_()
 
 # Screen with ticket content
 class TicketScreen(QMainWindow):
@@ -689,31 +613,10 @@ class MainWidget(QStackedWidget):
         self.s_home.pb_profile.clicked.connect(self.home_pb_profile)
         self.s_profile.pb_back.clicked.connect(self.profile_pb_back)
         self.s_tickets_list.pb_home.clicked.connect(self.tickets_list_pb_home)
-        self.s_tickets_list.w_tickets[0].mousePressEvent = lambda event : self.tickets_list_w_ticket(0)
-        self.s_tickets_list.w_tickets[1].mousePressEvent = lambda event : self.tickets_list_w_ticket(1)
-        self.s_tickets_list.w_tickets[2].mousePressEvent = lambda event : self.tickets_list_w_ticket(2)
-        self.s_tickets_list.w_tickets[3].mousePressEvent = lambda event : self.tickets_list_w_ticket(3)
-        self.s_tickets_list.w_tickets[4].mousePressEvent = lambda event : self.tickets_list_w_ticket(4)
-        self.s_tickets_list.w_tickets[5].mousePressEvent = lambda event : self.tickets_list_w_ticket(5)
-        self.s_tickets_list.w_tickets[6].mousePressEvent = lambda event : self.tickets_list_w_ticket(6)
-        self.s_tickets_list.w_tickets[7].mousePressEvent = lambda event : self.tickets_list_w_ticket(7)
-        self.s_tickets_list.w_tickets[8].mousePressEvent = lambda event : self.tickets_list_w_ticket(8)
-        self.s_tickets_list.w_tickets[9].mousePressEvent = lambda event : self.tickets_list_w_ticket(9)
-        self.s_tickets_list.w_tickets[10].mousePressEvent = lambda event : self.tickets_list_w_ticket(10)
-        self.s_tickets_list.w_tickets[11].mousePressEvent = lambda event : self.tickets_list_w_ticket(11)
-        self.s_tickets_list.w_tickets[12].mousePressEvent = lambda event : self.tickets_list_w_ticket(12)
-        self.s_tickets_list.w_tickets[13].mousePressEvent = lambda event : self.tickets_list_w_ticket(13)
-        self.s_tickets_list.w_tickets[14].mousePressEvent = lambda event : self.tickets_list_w_ticket(14)
-        self.s_tickets_list.w_tickets[15].mousePressEvent = lambda event : self.tickets_list_w_ticket(15)
-        self.s_tickets_list.w_tickets[16].mousePressEvent = lambda event : self.tickets_list_w_ticket(16)
-        self.s_tickets_list.w_tickets[17].mousePressEvent = lambda event : self.tickets_list_w_ticket(17)
-        self.s_tickets_list.w_tickets[18].mousePressEvent = lambda event : self.tickets_list_w_ticket(18)
-        self.s_tickets_list.w_tickets[19].mousePressEvent = lambda event : self.tickets_list_w_ticket(19)
-        self.s_tickets_list.w_tickets[20].mousePressEvent = lambda event : self.tickets_list_w_ticket(20)
-        self.s_tickets_list.w_tickets[21].mousePressEvent = lambda event : self.tickets_list_w_ticket(21)
-        self.s_tickets_list.w_tickets[22].mousePressEvent = lambda event : self.tickets_list_w_ticket(22)
-        self.s_tickets_list.w_tickets[23].mousePressEvent = lambda event : self.tickets_list_w_ticket(23)
-        self.s_tickets_list.w_tickets[24].mousePressEvent = lambda event : self.tickets_list_w_ticket(24)
+
+        for i in range(25):
+            self.s_tickets_list.w_tickets[i].mousePressEvent = lambda event, index=i: self.tickets_list_w_ticket(index)
+
         self.s_ticket.pb_back.clicked.connect(self.ticket_pb_back)
         self.s_ticket.pb_home.clicked.connect(self.ticket_pb_home)
         self.s_ticket.pb_test.clicked.connect(self.ticket_pb_test)
@@ -757,7 +660,10 @@ class MainWidget(QStackedWidget):
 
     # Move to test screen
     def ticket_pb_test(self):
-        self.setCurrentWidget(self.s_test)
+        # Переход на экран теста с передачей индекса билета
+        ticket_index = self.s_ticket.ticket_index  # Получаем индекс билета
+        self.s_test.set_ticket_index(ticket_index)  # Устанавливаем индекс в s_test
+        self.setCurrentWidget(self.s_test)  # Переходим на экран теста
 
     # Move to ticket screen
     def tickets_list_w_ticket(self, ticket_index: int):
