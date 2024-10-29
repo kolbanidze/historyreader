@@ -423,7 +423,6 @@ class TestScreen(QMainWindow):
         with open(PATH_PROFILES, "w") as file:
             json.dump(profiles, file, indent=2)
 
-
         StatisticsDialog(correct_answers, incorrect_answers, self).exec_()
 
 
