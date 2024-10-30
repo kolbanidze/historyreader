@@ -7,10 +7,22 @@
   padding-bottom: 20px;
   padding-top: 20px;
 }
-.Profile {
-  border-radius: 10px;
+.BodyComboBox {
   border: 3px solid gray;
-  font-size: 20px
+  font-family: "Lumberjack";
+  font-size: 30px;
+  height: 60px;
+}
+.BodyButton {
+  background-color: white;
+  border: 3px solid gray;
+  border-radius: 30px;
+  font-family: "Lumberjack";
+  font-size: 30px;
+  height: 60px;
+}
+.BodyButton:hover {
+  background-color: gray;
 }
 .Profile:hover {
   background-color: white;

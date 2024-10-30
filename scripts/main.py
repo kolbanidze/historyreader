@@ -2,12 +2,13 @@ from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QColor, QFontDatabase, QIcon, QPainter, QPixmap, QBrush
 from PyQt5.QtWidgets import *
 import json
-from datetime import datetime
+import os
 
 PATH_FONT_EVOLVENTA = "data\\fonts\\Evolventa.otf"
 PATH_FONT_LUMBERJACK = "data\\fonts\\Lumberjack.otf"
-PATH_ICON_MAIN_MENU = "data\\icons\\main_menu.png"
-PATH_ICON_MAIN_PROFILE = "data\\icons\\main_profile.png"
+PATH_ICON_BACK = "data\\icons\\back.png"
+PATH_ICON_HOME = "data\\icons\\home.png"
+PATH_ICON_PROFILE = "data\\icons\\profile.png"
 PATH_JSON_HOME = "data\\json\\home.json"
 PATH_JSON_TICKET = "data\\json\\ticket.json"
 PATH_JSON_TICKETS = "data\\json\\bilety.json"
@@ -18,142 +19,38 @@ PATH_STYLESHEET_TEST = "scripts\\style\\test.css"
 PATH_STYLESHEET_TICKET = "scripts\\style\\ticket.css"
 PATH_STYLESHEET_TICKETS_LIST = "scripts\\style\\tickets_list.css"
 PATH_TICKET_IMAGE = "data\\images\\ticket_{}.png"
+PATH_PROFILES = "data\\json\\profiles.json"
 
-class TicketDetailWindow(QDialog):
-    def __init__(self, ticket):
-        super().__init__()
-        self.ticket = ticket
-        self.setWindowTitle(f"Билет №{ticket['Number']}")
-        self.setMinimumSize(400, 300)
+user = None
 
-        # Главный макет для билета и теста
-        self.layout = QVBoxLayout()
-        self.setLayout(self.layout)
+class StatisticsDialog(QDialog):
+    def __init__(self, correct_count, incorrect_count, parent=None):
+        super().__init__(parent)
 
-        # Прокручиваемая область для текста билета
-        self.scroll_area = QScrollArea()
-        self.scroll_area.setWidgetResizable(True)
+        self.setWindowTitle("Результаты теста")
 
-        # Текст билета
-        ticket_text = QLabel(ticket['Text'])
-        ticket_text.setOpenExternalLinks(True)
-        ticket_text.setWordWrap(True)
-        self.scroll_area.setWidget(ticket_text)
+        # Устанавливаем макет
+        layout = QVBoxLayout()
 
-        # Кнопка для запуска теста
-        self.start_test_button = QPushButton("Начать тест")
-        self.start_test_button.clicked.connect(self.start_test)
+        # Создаем метки для правильных и неправильных ответов
+        self.label_correct = QLabel(f"Правильные ответы: {correct_count}")
+        self.label_incorrect = QLabel(f"Неправильные ответы: {incorrect_count}")
+        self.label_stats = QLabel(f"Итого: {round(100*correct_count/(correct_count+incorrect_count), 2)}% верных ответов.")
 
-        # Добавляем прокрутку и кнопку в макет
-        self.layout.addWidget(self.scroll_area)
-        self.layout.addWidget(self.start_test_button)
+        # Кнопка для закрытия окна
+        self.btn_close = QPushButton("Закрыть")
+        self.btn_close.clicked.connect(self.accept)  # Закрываем окно при нажатии на кнопку
 
-    def start_test(self):
-        # Удаляем виджет с текстом билета и кнопку
-        self.scroll_area.deleteLater()
-        self.start_test_button.deleteLater()
+        # Добавляем элементы в макет
+        layout.addWidget(self.label_correct)
+        layout.addWidget(self.label_incorrect)
+        layout.addWidget(self.label_stats)
+        layout.addWidget(self.btn_close)
 
-        # Загружаем тестовые данные
-        self.test_data = self.ticket["Test"]
-        self.current_question_index = 0
-        self.user_answers = []
+        # Устанавливаем макет в диалоговое окно
+        self.setLayout(layout)
 
-        # Вопрос и ответы
-        self.question_label = QLabel()
-        self.layout.addWidget(self.question_label)
 
-        self.answer_buttons = []
-        self.answers_layout = QVBoxLayout()
-        for i in range(4):
-            btn = QRadioButton()
-            self.answer_buttons.append(btn)
-            self.answers_layout.addWidget(btn)
-        self.layout.addLayout(self.answers_layout)
-
-        # Кнопки "Далее" и "Завершить тест"
-        self.next_button = QPushButton("Далее")
-        self.next_button.clicked.connect(self.next_question)
-        self.layout.addWidget(self.next_button)
-
-        self.finish_button = QPushButton("Завершить тест")
-        self.finish_button.clicked.connect(self.finish_test)
-        self.finish_button.setVisible(False)
-        self.layout.addWidget(self.finish_button)
-
-        # Показ первого вопроса
-        self.show_question(0)
-
-    def show_question(self, index):
-        """Отображает текущий вопрос и варианты ответов"""
-        question_data = self.test_data[index]
-        self.question_label.setText(question_data["Question"])
-
-        # Обновляем текст кнопок для ответов
-        for i, answer_text in enumerate(question_data["Answers"]):
-            self.answer_buttons[i].setText(answer_text)
-            self.answer_buttons[i].setVisible(True)
-            self.answer_buttons[i].setChecked(False)
-
-        # Скрываем неиспользуемые кнопки
-        for i in range(len(question_data["Answers"]), len(self.answer_buttons)):
-            self.answer_buttons[i].setVisible(False)
-
-        # Показ кнопок навигации
-        self.next_button.setVisible(index < len(self.test_data) - 1)
-        self.finish_button.setVisible(index == len(self.test_data) - 1)
-
-    def next_question(self):
-        """Сохраняет ответ и переходит к следующему вопросу"""
-        self.save_answer()
-        self.current_question_index += 1
-        if self.current_question_index < len(self.test_data):
-            self.show_question(self.current_question_index)
-
-    def save_answer(self):
-        """Сохраняет выбранный ответ пользователя для текущего вопроса"""
-        for btn in self.answer_buttons:
-            if btn.isChecked():
-                self.user_answers.append(btn.text())
-                return
-        self.user_answers.append(None)  # Если ответ не выбран
-
-    def finish_test(self):
-        """Завершает тест и показывает результаты"""
-        self.save_answer()
-        correct_answers = sum(
-            1 for user_answer, question_data in zip(self.user_answers, self.test_data)
-            if user_answer == question_data["CorrectAnswer"]
-        )
-
-        QMessageBox.information(
-            self, "Результат теста",
-            f"Вы ответили правильно на {correct_answers} из {len(self.test_data)} вопросов."
-        )
-
-        # Сохраняем результат
-        self.save_test_result(correct_answers, len(self.test_data))
-        self.accept()
-
-    def save_test_result(self, correct_answers, total_questions):
-        """Сохраняет результаты в stats.json"""
-        result = {
-            "Bilet": self.ticket["Number"],
-            "Time": datetime.now().isoformat(),
-            "CorrectAnswers": correct_answers,
-            "TotalAnswers": total_questions
-        }
-
-        try:
-            with open("stats.json", "r", encoding="utf-8") as f:
-                stats_data = json.load(f)
-        except (FileNotFoundError, json.JSONDecodeError):
-            stats_data = []
-
-        stats_data.append(result)
-        with open("stats.json", "w", encoding="utf-8") as f:
-            json.dump(stats_data, f, ensure_ascii=False, indent=4)
-
-# Screen with profile details
 class ProfileScreen(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -165,12 +62,12 @@ class ProfileScreen(QMainWindow):
         # Header
         self.w_header = QWidget()
         self.vb_header = QVBoxLayout()
-        self.pb_back = QPushButton("Back")
+        self.pb_back = QPushButton()
         self.l_profile_name = QLabel()
         self.l_profile_score = QLabel()
 
         # Body
-        self.sa_body = QScrollArea()
+        self.sa_body = QScrollArea(self)
         self.w_body = QWidget()
         self.g_body = QGridLayout()
         self.w_tests = list()
@@ -193,7 +90,9 @@ class ProfileScreen(QMainWindow):
 
         # Header properties
         self.pb_back.setProperty("class", "HeaderButton")
-        self.l_profile_name.setText("1 Профиль")
+        self.pb_back.setIcon(QIcon(PATH_ICON_BACK))
+        self.pb_back.setIconSize(QSize(60, 60))
+        self.l_profile_name.setText("Профиль")
         self.l_profile_name.setProperty("class", "ProfileName")
         self.l_profile_score.setText("0 баллов")
         self.l_profile_score.setProperty("class", "ProfileScore")
@@ -219,7 +118,7 @@ class ProfileScreen(QMainWindow):
 
             # Test properties
             w_test.setProperty("class", "Test")
-            self.w_tests.append(w_test)
+            self.w_tests.append((l_test_number, l_test_score))
 
             # Grid layout
             r = i // 4
@@ -238,62 +137,162 @@ class ProfileScreen(QMainWindow):
 
         self.setCentralWidget(self.w_background)
 
-# Screen with profiles list
-class AuthorisationScreen(QMainWindow):
-    def __init__(self):
-        super().__init__()
+    def update(self):
+        """Функция для обновления данных профиля"""
+        try:
+            # Загрузка данных профилей из JSON файла
+            with open(PATH_PROFILES, "r") as f:
+                profiles = json.load(f)
 
+            # Поиск профиля текущего пользователя
+            profile_data = next((profile for profile in profiles if profile["User"] == user), None)
+
+            if profile_data is None:
+                print("Профиль пользователя не найден.")
+                return
+
+            # Обновление имени пользователя и количества баллов
+            self.l_profile_name.setText(profile_data["User"])
+            self.l_profile_score.setText(f"{sum(profile_data['Tickets'])} баллов")
+
+            # Обновление информации о каждом тесте
+            for i, (l_test_number, l_test_score) in enumerate(self.w_tests):
+                if i < len(profile_data["Tickets"]):
+                    # Установка прогресса теста
+                    l_test_score.setText(f"{profile_data['Tickets'][i]}%")
+                else:
+                    # Если тестов в профиле меньше 25, остальные тесты скрываем
+                    l_test_score.setText("N/A")
+
+        except FileNotFoundError:
+            print(f"Файл {PATH_PROFILES} не найден.")
+        except json.JSONDecodeError:
+            print("Ошибка чтения данных из JSON.")
+
+# Screen with profiles list
+class AuthenticationScreen(QMainWindow):
+    def __init__(self, parent):
+        super().__init__()
+        self.parent = parent
         # Background
         self.w_background = QWidget()
         self.vb_background = QVBoxLayout()
 
         # Header
-        self.l_header = QLabel()
+        self.l_header = QLabel("Виртуальный билетник")
+        self.l_header.setAlignment(Qt.AlignCenter)
+        self.l_header.setProperty("class", "Header")
 
-        # Body
+        # Body Layout
         self.w_body = QWidget()
-        self.vb_body = QVBoxLayout()
-        self.pb_profiles = list()
+        self.grid_body = QGridLayout()
 
-        # Background layout
-        self.vb_background.addWidget(self.l_header, stretch=1, alignment=Qt.AlignCenter)
-        self.vb_background.addWidget(self.w_body, stretch=9, alignment=Qt.AlignCenter)
+        # User selection dropdown (similar to CTkOptionMenu)
+        self.cb_user_select = QComboBox()
+        self.load_profiles()  # Загружаем профили из файла
+        self.cb_user_select.setProperty("class", "BodyComboBox")
+
+        # Buttons
+        self.btn_create_user = QPushButton("Создать пользователя")
+        self.btn_create_user.clicked.connect(self.show_create_user_dialog)  # Подключаем к функции создания
+        self.btn_create_user.setProperty("class", "BodyButton")
+        self.btn_login = QPushButton("Войти")
+        self.btn_login.clicked.connect(self.login)
+        self.btn_login.setProperty("class", "BodyButton")
+
+        # Adding widgets to the grid layout
+        self.grid_body.addWidget(self.cb_user_select, 0, 0, 1, 1)
+        self.grid_body.addWidget(self.btn_create_user, 0, 1, 1, 1)
+        self.grid_body.addWidget(self.btn_login, 1, 0, 1, 2)
+
+        # Apply layout to the body widget
+        self.w_body.setLayout(self.grid_body)
+
+        # Background layout setup
+        self.vb_background.addWidget(self.l_header, stretch=1)
+        self.vb_background.addWidget(self.w_body, stretch=9)
         self.w_background.setLayout(self.vb_background)
 
         # Background properties
         self.w_background.setProperty("class", "Background")
-        self.vb_background.setContentsMargins(0, 0, 0, 0)
-        self.vb_background.setSpacing(0)
 
-        # Header properties
-        self.l_header.setProperty("class", "Header")
-        self.l_header.setText("Виртуальный билетник")
+        # Stylesheet
+        with open(PATH_STYLESHEET_AUTHORISATION, "r") as f:
+            self.setStyleSheet(f.read())
 
-        # Body layout
-        self.w_body.setLayout(self.vb_body)
-
-        # Body properties
-        for i in range(3):
-            pb_profile = QPushButton()
-            self.pb_profiles.append(pb_profile)
-
-            pb_profile.setProperty("class", "Profile")
-            pb_profile.setText(f"{i + 1} Профиль")
-
-        for pb in self.pb_profiles:
-            self.vb_body.addWidget(pb)
-
-            # Stylesheet
-            with open(PATH_STYLESHEET_AUTHORISATION, "r") as f:
-                self.setStyleSheet(f.read())
-
+        # Set the central widget
         self.setCentralWidget(self.w_background)
+
+    def load_profiles(self):
+        """Load profiles from profiles.json and populate the ComboBox."""
+        if os.path.exists(PATH_PROFILES):
+            with open(PATH_PROFILES, "r") as f:
+                profiles = json.load(f)
+                self.cb_user_select.clear()
+                for profile in profiles:
+                    self.cb_user_select.addItem(profile["User"])
+        else:
+            with open(PATH_PROFILES, "w") as f:
+                json.dump([], f)
+
+    def show_create_user_dialog(self):
+        """Show a dialog to create a new user."""
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Создать пользователя")
+
+        # Form layout for user input
+        form_layout = QFormLayout(dialog)
+        username_input = QLineEdit(dialog)
+        form_layout.addRow("Имя пользователя:", username_input)
+
+        # Dialog buttons
+        dialog_buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        dialog_buttons.accepted.connect(lambda: self.create_user(username_input.text(), dialog))
+        dialog_buttons.rejected.connect(dialog.reject)
+        form_layout.addWidget(dialog_buttons)
+
+        dialog.setLayout(form_layout)
+        dialog.exec_()
+
+    def create_user(self, username, dialog):
+        """Add a new user profile to profiles.json."""
+        if not username:
+            QMessageBox.warning(self, "Ошибка", "Имя пользователя не может быть пустым.")
+            return
+
+        new_profile = {"User": username, "Tickets": [0] * 25}  # Example structure
+        profiles = []
+
+        # Load existing profiles
+        if os.path.exists(PATH_PROFILES):
+            with open(PATH_PROFILES, "r") as f:
+                profiles = json.load(f)
+
+        # Add the new profile
+        profiles.append(new_profile)
+
+        # Save to file
+        with open(PATH_PROFILES, "w") as f:
+            json.dump(profiles, f, indent=2)
+
+        # Update ComboBox and close dialog
+        self.cb_user_select.addItem(username)
+        dialog.accept()
+        QMessageBox.information(self, "Успех", f"Пользователь '{username}' успешно создан.")
+
+    def login(self):
+        global user
+        user = self.cb_user_select.currentText()
+        if not user:
+            QMessageBox.warning(self, "Ошибка выбора", "Пожалуйста, выберите пользователя.")
+            return
+        self.parent.ticket_pb_home()
 
 # Widget with test question
 class QuestionWidget(QWidget):
-    def __init__(self):
+    def __init__(self, ticket):
         super().__init__()
-
+        self.ticket = ticket
         # Body
         self.vb_body = QVBoxLayout()
         self.l_label = QLabel()
@@ -301,22 +300,29 @@ class QuestionWidget(QWidget):
 
         # Body layout
         self.vb_body.addWidget(self.l_label)
-        for i in range(4):
+        for i in ticket["Answers"]:
             rb_option = QRadioButton()
             self.rb_options.append(rb_option)
 
-            rb_option.setText("Option")
+            rb_option.setText(i)
             self.vb_body.addWidget(rb_option)
         self.setLayout(self.vb_body)
 
-        self.l_label.setText("Question")
+        self.l_label.setText(ticket["Question"])
+
+    def get_answer(self):
+        for i in self.rb_options:
+            if i.isChecked():
+                return i.text()
 
 # Screen with test
 class TestScreen(QMainWindow):
-    def __init__(self):
+    def __init__(self, parent):
         super().__init__()
+        self.parent = parent
 
         self.ticket_index = None
+        self.ticket = None
 
         # JSON
         self.tickets = list()
@@ -332,19 +338,26 @@ class TestScreen(QMainWindow):
         self.w_header_top = QWidget()
         self.vb_header = QVBoxLayout()
         self.hb_header_top = QHBoxLayout()
-        self.pb_back = QPushButton("Back")
-        self.pb_home = QPushButton("Home")
+        self.pb_back = QPushButton()
+        self.pb_home = QPushButton()
         self.l_ticket_title = QLabel()
 
+        self.pb_back.clicked.connect(self.go_back)
+        self.pb_home.clicked.connect(self.go_home)
+
         # Body
-        self.sa_body = QScrollArea()
+        self.sa_body = QScrollArea(self)
         self.w_body = QWidget()
         self.vb_body = QVBoxLayout()
         self.w_questions = list()
 
+        # Footer
+        self.pb_check = QPushButton("Проверить тест")
+
         # Background layout
         self.vb_background.addWidget(self.w_header)
         self.vb_background.addWidget(self.sa_body)
+        self.vb_background.addWidget(self.pb_check)
         self.w_background.setLayout(self.vb_background)
 
         # Background properties
@@ -364,22 +377,22 @@ class TestScreen(QMainWindow):
         self.vb_header.setContentsMargins(0, 0, 0, 0)
         self.vb_header.setSpacing(0)
         self.pb_back.setProperty("class", "HeaderButton")
+        self.pb_back.setIcon(QIcon(PATH_ICON_BACK))
+        self.pb_back.setIconSize(QSize(60, 60))
         self.pb_home.setProperty("class", "HeaderButton")
+        self.pb_home.setIcon(QIcon(PATH_ICON_HOME))
+        self.pb_home.setIconSize(QSize(60, 60))
         self.l_ticket_title.setProperty("class", "TicketTitle")
-        self.l_ticket_title.setText("1 Тест")
-
-        # Body layout
-        for i in range(8):
-            w_question = QuestionWidget()
-            self.w_questions.append(w_question)
-
-            self.vb_body.addWidget(w_question)
-        self.w_body.setLayout(self.vb_body)
 
         # Body properties
         self.sa_body.setProperty("class", "saBody")
         self.sa_body.setWidgetResizable(True)
         self.sa_body.setWidget(self.w_body)
+        self.w_body.setStyleSheet("font-family: \"Evolventa\"; font-size: 20px;")
+
+        # Check Button
+        self.pb_check.setProperty("class", "FooterButton")  # Кнопка для проверки теста
+        self.pb_check.clicked.connect(self.check_test)  # Связываем сигнал с методом проверки
 
         # Stylesheet
         with open(PATH_STYLESHEET_TEST, "r") as f:
@@ -387,8 +400,55 @@ class TestScreen(QMainWindow):
 
         self.setCentralWidget(self.w_background)
 
-    def refresh(self):
-        ticket = self.tickets[self.ticket_index]
+    def set_ticket_index(self, ticket_index):
+        self.ticket_index = ticket_index
+        self.ticket = self.tickets[self.ticket_index]
+
+        self.l_ticket_title.setText(f"{self.ticket["Number"]} Тест")
+        for question in self.w_questions:
+            self.vb_body.removeWidget(question)
+            question.deleteLater()  # Удаляем виджет, чтобы освободить память
+        self.w_questions.clear()  # Очищаем список вопросов
+
+        # Body layout
+        for i in self.ticket["Test"]:
+            w_question = QuestionWidget(i)
+            self.w_questions.append(w_question)
+
+            self.vb_body.addWidget(w_question)
+        self.w_body.setLayout(self.vb_body)
+
+    def check_test(self):
+        correct_answers = 0
+        incorrect_answers = 0
+        total_answers = len(self.ticket["Test"])
+        answers = []
+        for i in self.w_questions:
+            answers.append(i.get_answer())
+        for i in range(total_answers):
+            if answers[i] == self.ticket["Test"][i]["CorrectAnswer"]:
+                correct_answers += 1
+            else:
+                incorrect_answers += 1
+        # print(f"Правильных ответов: {correct_answers}\nНеправильных ответов: {incorrect_answers}\nИтого: {100*correct_answers/total_answers}%.")
+        score = round(100*correct_answers/total_answers)
+        with open(PATH_PROFILES, "r") as file:
+            profiles = json.load(file)
+        for i in range(len(profiles)):
+            if profiles[i]["User"] == user:
+                if profiles[i]["Tickets"][self.ticket_index] < score:
+                    profiles[i]["Tickets"][self.ticket_index] = score
+                break
+        with open(PATH_PROFILES, "w") as file:
+            json.dump(profiles, file, indent=2)
+        self.go_back()
+        StatisticsDialog(correct_answers, incorrect_answers, self).exec_()
+
+    def go_back(self):
+        self.parent.setCurrentWidget(self.parent.s_tickets_list)
+
+    def go_home(self):
+        self.parent.setCurrentWidget(self.parent.s_home)
 
 # Screen with ticket content
 class TicketScreen(QMainWindow):
@@ -412,12 +472,12 @@ class TicketScreen(QMainWindow):
         self.w_header_top = QWidget()
         self.vb_header = QVBoxLayout()
         self.hb_header_top = QHBoxLayout()
-        self.pb_back = QPushButton("Back")
-        self.pb_home = QPushButton("Home")
+        self.pb_back = QPushButton()
+        self.pb_home = QPushButton()
         self.l_ticket_title = QLabel()
 
         # Body
-        self.sa_body = QScrollArea()
+        self.sa_body = QScrollArea(self)
         self.l_ticket_content = QLabel()
 
         # Footer
@@ -446,13 +506,18 @@ class TicketScreen(QMainWindow):
         self.vb_header.setContentsMargins(0, 0, 0, 0)
         self.vb_header.setSpacing(0)
         self.pb_back.setProperty("class", "HeaderButton")
+        self.pb_back.setIcon(QIcon(PATH_ICON_BACK))
+        self.pb_back.setIconSize(QSize(60, 60))
         self.pb_home.setProperty("class", "HeaderButton")
+        self.pb_home.setIcon(QIcon(PATH_ICON_HOME))
+        self.pb_home.setIconSize(QSize(60, 60))
         self.l_ticket_title.setProperty("class", "TicketTitle")
 
         # Body properties
         self.sa_body.setProperty("class", "saBody")
         self.sa_body.setWidgetResizable(True)
         self.sa_body.setWidget(self.l_ticket_content)
+        self.l_ticket_content.setProperty("class", "TicketContent")
         self.l_ticket_content.setWordWrap(True)
 
         # Footer properties
@@ -471,8 +536,10 @@ class TicketScreen(QMainWindow):
 
 # Screen with tickets list
 class TicketsListScreen(QMainWindow):
-    def __init__(self):
+    def __init__(self, parent):
         super().__init__()
+
+        self.parent = parent
 
         # Background
         self.w_background = QWidget()
@@ -482,10 +549,12 @@ class TicketsListScreen(QMainWindow):
         self.w_header = QWidget()
         self.hb_header = QHBoxLayout()
         self.pb_profile = QPushButton()
-        self.pb_home = QPushButton("Home")
+        self.pb_home = QPushButton()
+
+        self.pb_profile.clicked.connect(self.go_home)
 
         # Body
-        self.sa_body = QScrollArea()
+        self.sa_body = QScrollArea(self)
         self.w_body = QWidget()
         self.g_body = QGridLayout()
         self.w_tickets = list()
@@ -507,9 +576,11 @@ class TicketsListScreen(QMainWindow):
 
         # Header properties
         self.pb_profile.setProperty("class", "HeaderButton")
-        self.pb_profile.setIcon(QIcon(PATH_ICON_MAIN_PROFILE))
+        self.pb_profile.setIcon(QIcon(PATH_ICON_PROFILE))
         self.pb_profile.setIconSize(QSize(60, 60))
         self.pb_home.setProperty("class", "HeaderButton")
+        self.pb_home.setIcon(QIcon(PATH_ICON_HOME))
+        self.pb_home.setIconSize(QSize(60, 60))
 
         # Body layout
         self.w_body.setLayout(self.g_body)
@@ -563,6 +634,10 @@ class TicketsListScreen(QMainWindow):
 
         self.setCentralWidget(self.w_background)
 
+    def go_home(self):
+        self.parent.s_profile.update()
+        self.parent.setCurrentWidget(self.parent.s_profile)
+
 # Screen with interesting facts
 class HomeScreen(QMainWindow):
     def __init__(self):
@@ -580,12 +655,10 @@ class HomeScreen(QMainWindow):
         # Header
         self.w_header = QWidget()
         self.hb_header = QHBoxLayout()
-        self.pb_menu = QPushButton()
         self.pb_profile = QPushButton()
-        self.le_search = QLineEdit()
 
         # Body
-        self.sa_body = QScrollArea()
+        self.sa_body = QScrollArea(self)
         self.l_body_header = QLabel(self.strings["this_is_interesting"])
         self.w_body = QWidget()
         self.vb_body = QVBoxLayout()
@@ -608,20 +681,13 @@ class HomeScreen(QMainWindow):
         self.vb_background.setSpacing(0)
 
         # Header layout
-        self.hb_header.addWidget(self.pb_profile, stretch=1)
-        self.hb_header.addWidget(self.le_search, stretch=8)
-        self.hb_header.addWidget(self.pb_menu, stretch=1)
+        self.hb_header.addWidget(self.pb_profile, alignment=Qt.AlignLeft)
         self.w_header.setLayout(self.hb_header)
 
         # Header properties
         self.pb_profile.setProperty("class", "HeaderButton")
-        self.pb_profile.setIcon(QIcon(PATH_ICON_MAIN_PROFILE))
+        self.pb_profile.setIcon(QIcon(PATH_ICON_PROFILE))
         self.pb_profile.setIconSize(QSize(60, 60))
-        self.pb_menu.setProperty("class", "HeaderButton")
-        self.pb_menu.setIcon(QIcon(PATH_ICON_MAIN_MENU))
-        self.pb_menu.setIconSize(QSize(60, 60))
-        self.le_search.setProperty("class", "Search")
-        self.le_search.setPlaceholderText(self.strings["search"])
 
         # Body layout
         self.vb_body.addWidget(self.l_body_header)
@@ -675,45 +741,22 @@ class MainWidget(QStackedWidget):
         QFontDatabase.addApplicationFont(PATH_FONT_LUMBERJACK)
 
         # Screens
-        self.s_authorisation = AuthorisationScreen()
+        self.s_authorisation = AuthenticationScreen(self)
         self.s_home = HomeScreen()
         self.s_profile = ProfileScreen()
-        self.s_tickets_list = TicketsListScreen()
+        self.s_tickets_list = TicketsListScreen(self)
         self.s_ticket = TicketScreen()
-        self.s_test = TestScreen()
+        self.s_test = TestScreen(self)
 
         # Screens properties
-        for pb in self.s_authorisation.pb_profiles:
-            pb.clicked.connect(self.authorisation_profile)
         self.s_home.pb_tickets_list.clicked.connect(self.home_pb_tickets_list)
         self.s_home.pb_profile.clicked.connect(self.home_pb_profile)
         self.s_profile.pb_back.clicked.connect(self.profile_pb_back)
         self.s_tickets_list.pb_home.clicked.connect(self.tickets_list_pb_home)
-        self.s_tickets_list.w_tickets[0].mousePressEvent = lambda event : self.tickets_list_w_ticket(0)
-        self.s_tickets_list.w_tickets[1].mousePressEvent = lambda event : self.tickets_list_w_ticket(1)
-        self.s_tickets_list.w_tickets[2].mousePressEvent = lambda event : self.tickets_list_w_ticket(2)
-        self.s_tickets_list.w_tickets[3].mousePressEvent = lambda event : self.tickets_list_w_ticket(3)
-        self.s_tickets_list.w_tickets[4].mousePressEvent = lambda event : self.tickets_list_w_ticket(4)
-        self.s_tickets_list.w_tickets[5].mousePressEvent = lambda event : self.tickets_list_w_ticket(5)
-        self.s_tickets_list.w_tickets[6].mousePressEvent = lambda event : self.tickets_list_w_ticket(6)
-        self.s_tickets_list.w_tickets[7].mousePressEvent = lambda event : self.tickets_list_w_ticket(7)
-        self.s_tickets_list.w_tickets[8].mousePressEvent = lambda event : self.tickets_list_w_ticket(8)
-        self.s_tickets_list.w_tickets[9].mousePressEvent = lambda event : self.tickets_list_w_ticket(9)
-        self.s_tickets_list.w_tickets[10].mousePressEvent = lambda event : self.tickets_list_w_ticket(10)
-        self.s_tickets_list.w_tickets[11].mousePressEvent = lambda event : self.tickets_list_w_ticket(11)
-        self.s_tickets_list.w_tickets[12].mousePressEvent = lambda event : self.tickets_list_w_ticket(12)
-        self.s_tickets_list.w_tickets[13].mousePressEvent = lambda event : self.tickets_list_w_ticket(13)
-        self.s_tickets_list.w_tickets[14].mousePressEvent = lambda event : self.tickets_list_w_ticket(14)
-        self.s_tickets_list.w_tickets[15].mousePressEvent = lambda event : self.tickets_list_w_ticket(15)
-        self.s_tickets_list.w_tickets[16].mousePressEvent = lambda event : self.tickets_list_w_ticket(16)
-        self.s_tickets_list.w_tickets[17].mousePressEvent = lambda event : self.tickets_list_w_ticket(17)
-        self.s_tickets_list.w_tickets[18].mousePressEvent = lambda event : self.tickets_list_w_ticket(18)
-        self.s_tickets_list.w_tickets[19].mousePressEvent = lambda event : self.tickets_list_w_ticket(19)
-        self.s_tickets_list.w_tickets[20].mousePressEvent = lambda event : self.tickets_list_w_ticket(20)
-        self.s_tickets_list.w_tickets[21].mousePressEvent = lambda event : self.tickets_list_w_ticket(21)
-        self.s_tickets_list.w_tickets[22].mousePressEvent = lambda event : self.tickets_list_w_ticket(22)
-        self.s_tickets_list.w_tickets[23].mousePressEvent = lambda event : self.tickets_list_w_ticket(23)
-        self.s_tickets_list.w_tickets[24].mousePressEvent = lambda event : self.tickets_list_w_ticket(24)
+
+        for i in range(25):
+            self.s_tickets_list.w_tickets[i].mousePressEvent = lambda event, index=i: self.tickets_list_w_ticket(index)
+
         self.s_ticket.pb_back.clicked.connect(self.ticket_pb_back)
         self.s_ticket.pb_home.clicked.connect(self.ticket_pb_home)
         self.s_ticket.pb_test.clicked.connect(self.ticket_pb_test)
@@ -741,6 +784,7 @@ class MainWidget(QStackedWidget):
 
     # Move to profile screen
     def home_pb_profile(self):
+        self.s_profile.update()
         self.setCurrentWidget(self.s_profile)
 
     # Move to home screen
@@ -757,7 +801,10 @@ class MainWidget(QStackedWidget):
 
     # Move to test screen
     def ticket_pb_test(self):
-        self.setCurrentWidget(self.s_test)
+        # Переход на экран теста с передачей индекса билета
+        ticket_index = self.s_ticket.ticket_index  # Получаем индекс билета
+        self.s_test.set_ticket_index(ticket_index)  # Устанавливаем индекс в s_test
+        self.setCurrentWidget(self.s_test)  # Переходим на экран теста
 
     # Move to ticket screen
     def tickets_list_w_ticket(self, ticket_index: int):

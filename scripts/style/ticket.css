@@ -21,6 +21,10 @@
 .saBody {
   border: none;
 }
+.TicketContent {
+  font-family: "Evolventa";
+  font-size: 20px;
+}
 .FooterButton {
   background-color: white;
   border-top: 3px solid gray;
